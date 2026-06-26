@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Studio</title>
+<style>
+:root{
+  --bg:#0a0b10; --panel:#11131b; --panel2:#181b27; --card:#141724; --hover:#1f2333;
+  --line:#262b3f; --line2:#343b58;
+  --text:#edeef6; --muted:#8a90ab;
+  --v:#8b5cf6; --pk:#ec4899; --cy:#22d3ee; --ok:#34d399; --danger:#fb7185;
+  --grad:linear-gradient(135deg,#8b5cf6 0%,#ec4899 100%);
+  --mono:'Cascadia Code',Consolas,'D2Coding',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,'Segoe UI','Malgun Gothic','Hiragino Sans',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);
+  border-radius:8px;padding:5px 8px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--v)}
+input[type=number]{padding-right:2px}
+:focus-visible{outline:2px solid var(--v);outline-offset:1px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2c3147;border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+::selection{background:rgba(139,92,246,.4)}
+
+/* ── top bar ── */
+#topbar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:var(--panel);
+  border-bottom:1px solid var(--line);flex-shrink:0}
+.brand{font-weight:800;font-size:14.5px;letter-spacing:.2px;margin-right:6px;white-space:nowrap;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand small{font-weight:500;font-size:10px;opacity:.85}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:10px;
+  border:1px solid var(--line);background:var(--panel2);white-space:nowrap;
+  transition:background .15s,border-color .15s,transform .12s,box-shadow .15s}
+.btn:hover{background:var(--hover);border-color:var(--line2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff;font-weight:700;
+  box-shadow:0 4px 16px rgba(139,92,246,.35)}
+.btn.primary:hover{box-shadow:0 6px 22px rgba(236,72,153,.45);filter:brightness(1.08)}
+.btn.icon{padding:6px 9px}
+.sep{width:1px;height:20px;background:var(--line);margin:0 3px;flex-shrink:0}
+#fileName{color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+#dirtyDot{color:var(--pk);visibility:hidden;font-size:15px;line-height:1}
+.spacer{flex:1}
+.viewSwitch{display:flex;gap:2px;background:#0d0f17;border:1px solid var(--line);border-radius:12px;padding:3px}
+.viewSwitch button{padding:4px 13px;border-radius:9px;color:var(--muted);font-weight:600;transition:all .15s}
+.viewSwitch button:hover{color:var(--text)}
+.viewSwitch button.on{background:var(--grad);color:#fff;box-shadow:0 2px 10px rgba(139,92,246,.4)}
+#modeBtn.preview-on{background:linear-gradient(135deg,#22d3ee,#3b82f6);border-color:transparent;color:#fff;font-weight:700;
+  box-shadow:0 4px 16px rgba(34,211,238,.3)}
+#langSel{border-radius:10px;padding:5px 6px;background:var(--panel2);font-size:12px}
+
+/* ── tool bar ── */
+#toolbar{display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--panel);
+  border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap;min-height:42px}
+.tbtn{padding:5px 9px;border-radius:8px;border:1px solid transparent;min-width:30px;text-align:center;
+  transition:background .12s,border-color .12s}
+.tbtn:hover{background:var(--hover);border-color:var(--line)}
+.tbtn b{font-family:Georgia,serif}
+.tgroup{display:flex;align-items:center;gap:2px}
+.tlabel{color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  margin:0 5px 0 2px;white-space:nowrap}
+#tableTools{display:none;align-items:center;gap:2px;padding:3px 8px;border-radius:12px;
+  border:1px solid transparent;
+  background:linear-gradient(var(--panel2),var(--panel2)) padding-box,var(--grad) border-box}
+#tableTools.on{display:flex;animation:popin .18s ease}
+@keyframes popin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+#tableTools .tlabel{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* dropdown */
+.dd{position:relative}
+.ddMenu{position:absolute;top:calc(100% + 6px);left:0;background:var(--panel2);border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,.55);min-width:190px;z-index:50;display:none;
+  padding:5px;max-height:60vh;overflow:auto}
+.dd.open .ddMenu{display:block;animation:popin .15s ease}
+.ddMenu button{display:block;width:100%;text-align:left;padding:7px 11px;border-radius:9px;transition:background .1s}
+.ddMenu button:hover{background:var(--hover)}
+.ddMenu .ddSep{height:1px;background:var(--line);margin:5px 8px}
+
+/* ── main layout ── */
+#main{flex:1;display:flex;min-height:0}
+#canvasWrap{flex:1;display:flex;flex-direction:column;min-width:0}
+#canvasPad{flex:1;overflow:auto;padding:20px;display:flex;background-color:#0c0d14;
+  background-image:radial-gradient(rgba(139,92,246,.16) 1px,transparent 1.3px);background-size:22px 22px}
+#frame{flex:1;border:none;background:#fff;border-radius:12px;min-height:100%;
+  box-shadow:0 10px 44px rgba(0,0,0,.55),0 0 0 1px rgba(139,92,246,.18)}
+#sourceWrap{flex:1;display:none;flex-direction:column;min-width:0;border-left:1px solid var(--line);background:var(--bg)}
+#sourceHead{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+#sourceHead span{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+#srcText{flex:1;resize:none;border:none;border-radius:0;background:#0b0d13;font-family:var(--mono);
+  font-size:12.5px;line-height:1.6;padding:14px;white-space:pre;tab-size:2}
+body.view-source #canvasWrap{display:none}
+body.view-source #sourceWrap,body.view-split #sourceWrap{display:flex}
+
+/* ── inspector ── */
+#inspector{width:280px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:auto;padding-bottom:10px}
+.insSec{margin:10px 10px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding-bottom:12px}
+.insSec h3{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+  padding:11px 13px 7px;font-weight:700}
+.insBody{padding:0 13px}
+#selTag{font-family:var(--mono);font-size:15px;font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+#multiBadge{display:none;margin-left:6px;font-size:10.5px;font-weight:700;color:#fff;
+  background:var(--grad);border-radius:99px;padding:2px 8px;vertical-align:2px}
+#selMeta{color:var(--muted);font-size:11px;margin-top:3px;word-break:break-all;font-family:var(--mono)}
+.row{display:flex;align-items:center;gap:6px;margin-top:7px}
+.row label{width:62px;color:var(--muted);flex-shrink:0;font-size:11.5px}
+.row input,.row select{flex:1;min-width:0}
+.row input[type=color]{padding:2px;height:27px;width:38px;flex:0 0 38px;cursor:pointer;border-radius:8px}
+.row input[type=number]{flex:0 0 74px}
+.unit{color:var(--muted);font-size:11px}
+.alignBtns{display:flex;gap:3px;flex:1}
+.alignBtns button{flex:1;border:1px solid var(--line);border-radius:8px;padding:3px 0;background:var(--panel2);transition:all .12s}
+.alignBtns button:hover{border-color:var(--line2)}
+.alignBtns button.on{background:var(--grad);border-color:transparent;color:#fff}
+.opGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}
+.opGrid .btn{justify-content:center;padding:6px 4px;font-size:12px;border-radius:9px}
+.btn.dangerB{color:var(--danger);border-color:#503040}
+.btn.dangerB:hover{background:#33212c;border-color:#6b3950}
+#attrList{margin-top:4px}
+.attrRow{display:flex;gap:4px;margin-top:5px}
+.attrRow input{flex:1;min-width:0;font-family:var(--mono);font-size:11.5px}
+.attrRow input.k{flex:0 0 78px}
+.attrRow button{color:var(--muted);padding:0 5px;border-radius:6px}
+.attrRow button:hover{color:var(--danger);background:var(--hover)}
+#noSel{padding:18px 16px;color:var(--muted);line-height:1.9;font-size:12.5px}
+#noSel .hintK{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  padding:0 6px;font-size:11px;font-family:var(--mono);color:var(--text)}
+
+/* ── status bar ── */
+#statusbar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);
+  border-top:1px solid var(--line);flex-shrink:0;min-height:32px}
+#crumbs{display:flex;align-items:center;gap:2px;overflow-x:auto;flex:1;font-family:var(--mono);font-size:12px}
+#crumbs button{color:var(--muted);padding:2px 7px;border-radius:99px;white-space:nowrap;transition:all .12s}
+#crumbs button:hover{color:var(--text);background:var(--hover)}
+#crumbs button.last{color:#fff;background:var(--grad);font-weight:700}
+#crumbs .sepc{color:#3d4360}
+#toast{color:var(--muted);white-space:nowrap;transition:opacity .4s;font-weight:600}
+#toast.ok{color:var(--ok)} #toast.err{color:var(--danger)}
+
+/* ── data panel ── */
+#dataPanel{display:none;flex-direction:column;height:262px;border-top:1px solid var(--line);background:var(--panel);flex-shrink:0}
+body.dp-open #dataPanel{display:flex}
+#dpHead{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#dpHead .tlabel{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+#dpBlockSel{font-family:var(--mono);font-size:11.5px;border-radius:8px}
+#dpHint{color:var(--muted);font-size:11px}
+#dpCrumbs{display:flex;align-items:center;gap:2px;padding:4px 10px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:11.5px;overflow-x:auto;flex-shrink:0}
+#dpCrumbs button{color:var(--muted);padding:2px 8px;border-radius:99px;white-space:nowrap;transition:all .12s}
+#dpCrumbs button:hover{color:var(--text);background:var(--hover)}
+#dpCrumbs button.last{color:#fff;background:var(--grad);font-weight:700}
+#dpCrumbs .sepc{color:#3d4360}
+.dpDrill{font-family:var(--mono);font-size:11px;color:#c4b5fd;background:rgba(139,92,246,.12);
+  border:1px solid rgba(139,92,246,.4);border-radius:8px;padding:3px 10px;margin:3px 7px;white-space:nowrap;transition:background .12s}
+.dpDrill:hover{background:rgba(139,92,246,.28)}
+#dpBody{flex:1;overflow:auto;padding:6px 10px 10px}
+#dpTable{border-collapse:collapse;font-size:12px}
+#dpTable th{position:sticky;top:0;background:var(--panel2);z-index:2}
+#dpTable th,#dpTable td{border:1px solid var(--line);padding:0}
+#dpTable .rn{min-width:36px;text-align:center;color:var(--muted);cursor:pointer;background:var(--panel2);padding:5px 7px;user-select:none;font-family:var(--mono);font-size:11px}
+#dpTable tr.selR .rn{background:var(--grad);color:#fff}
+#dpTable tr.selR td{background:rgba(139,92,246,.08)}
+#dpTable input{border:none;background:transparent;border-radius:0;width:100%;min-width:120px;padding:5px 9px;font-family:var(--mono);font-size:12px}
+#dpTable input:focus{background:#1d2130;outline:none}
+#dpTable th .hwrap{display:flex;align-items:center}
+#dpTable th input{font-weight:700;color:var(--text)}
+#dpTable th input:disabled{color:var(--muted)}
+#dpTable th button{color:var(--muted);padding:0 7px}
+#dpTable th button:hover{color:var(--danger)}
+#dpRawText{width:100%;height:100%;resize:none;font-family:var(--mono);font-size:12px;line-height:1.6;background:#0b0d13;border:1px solid var(--line);border-radius:10px;padding:10px;white-space:pre;tab-size:2}
+
+/* ── dialogs ── */
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;
+  padding:20px;min-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.65)}
+dialog::backdrop{background:rgba(5,6,10,.6);backdrop-filter:blur(3px)}
+dialog h2{font-size:15px;margin-bottom:14px;font-weight:800;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+dialog h2 span{color:var(--muted);-webkit-text-fill-color:var(--muted);font-weight:500;font-size:11.5px}
+dialog .row label{width:80px}
+dialog .dlgBtns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#frCount{color:var(--muted);font-size:12px;margin-top:10px}
+kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:6px;padding:1px 6px;font-size:11px}
+#helpDlg{max-width:540px}
+#helpDlg table{width:100%;border-collapse:collapse;margin-top:4px}
+#helpDlg td{padding:6px;border-bottom:1px solid var(--line);font-size:12.5px}
+#helpDlg td:first-child{width:190px;color:var(--muted);font-family:var(--mono);font-size:11.5px}
+</style>
+</head>
+<body class="view-visual">
+
+<div id="topbar">
+  <span class="brand">✦ HTML Studio <small>local</small></span>
+  <button class="btn" id="newBtn" data-i18n="newDoc">새 문서</button>
+  <button class="btn" id="openBtn" data-i18n="open" title="Ctrl+O">열기</button>
+  <button class="btn primary" id="saveBtn" data-i18n="save" title="Ctrl+S">저장</button>
+  <button class="btn" id="saveAsBtn" data-i18n="saveAs" title="Ctrl+Shift+S">다른 이름으로</button>
+  <div class="sep"></div>
+  <span id="fileName">untitled.html</span><span id="dirtyDot">●</span>
+  <div class="spacer"></div>
+  <button class="btn icon" id="undoBtn" title="Ctrl+Z">↶</button>
+  <button class="btn icon" id="redoBtn" title="Ctrl+Y">↷</button>
+  <div class="sep"></div>
+  <button class="btn" id="findBtn" data-i18n="find" title="Ctrl+H">찾기/바꾸기</button>
+  <button class="btn" id="bakeBtn" data-i18n="bakeBtn" data-i18n-title="tBakeT">⚡ 굽기</button>
+  <button class="btn" id="dataBtn" data-i18n="dataBtn" data-i18n-title="tDataT" style="display:none">📊 데이터</button>
+  <button class="btn" id="modeBtn" data-i18n="preview">미리보기</button>
+  <div class="viewSwitch">
+    <button data-view="visual" class="on" data-i18n="viewEdit">편집</button>
+    <button data-view="split" data-i18n="viewSplit">분할</button>
+    <button data-view="source" data-i18n="viewSource">소스</button>
+  </div>
+  <select id="langSel" title="Language">
+    <option value="ko">🇰🇷 한국어</option>
+    <option value="ja">🇯🇵 日本語</option>
+    <option value="en">🇺🇸 English</option>
+  </select>
+  <button class="btn icon" id="helpBtn">?</button>
+</div>
+
+<div id="toolbar">
+  <div class="dd" id="insertDd">
+    <button class="btn" id="insertBtn"><span data-i18n="insert">+ 삽입</span> ▾</button>
+    <div class="ddMenu">
+      <button data-ins="h2" data-i18n="insH">제목 (H2)</button>
+      <button data-ins="p" data-i18n="insP">문단</button>
+      <button data-ins="ul" data-i18n="insUL">글머리 목록</button>
+      <button data-ins="ol" data-i18n="insOL">번호 목록</button>
+      <button data-ins="blockquote" data-i18n="insQ">인용문</button>
+      <button data-ins="pre" data-i18n="insPre">코드 블록</button>
+      <div class="ddSep"></div>
+      <button data-ins="table" data-i18n="insTable">표 (3×3)</button>
+      <button data-ins="img" data-i18n="insImg">이미지…</button>
+      <button data-ins="a" data-i18n="insA">링크…</button>
+      <button data-ins="button" data-i18n="insBtn">버튼</button>
+      <div class="ddSep"></div>
+      <button data-ins="div" data-i18n="insDiv">컨테이너 (DIV)</button>
+      <button data-ins="hr" data-i18n="insHr">구분선</button>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <div class="tgroup">
+    <span class="tlabel" data-i18n="fmt">서식</span>
+    <button class="tbtn" data-fmt="bold"><b>B</b></button>
+    <button class="tbtn" data-fmt="italic"><i>I</i></button>
+    <button class="tbtn" data-fmt="underline"><u>U</u></button>
+    <button class="tbtn" data-fmt="strikeThrough"><s>S</s></button>
+    <button class="tbtn" data-fmt="removeFormat" data-i18n-title="tClearFmt">⌫</button>
+  </div>
+  <div class="sep"></div>
+  <div class="tgroup">
+    <span class="tlabel" data-i18n="tag">태그</span>
+    <select id="tagSelect">
+      <option value="" data-i18n="tagChange">변경…</option>
+      <option>h1</option><option>h2</option><option>h3</option><option>h4</option>
+      <option>p</option><option>div</option><option>span</option>
+      <option>blockquote</option><option>pre</option><option>section</option>
+    </select>
+  </div>
+  <div class="sep"></div>
+  <div id="tableTools">
+    <span class="tlabel" data-i18n="table">표</span>
+    <button class="tbtn" data-tbl="rowAbove" data-i18n="rowAbove" data-i18n-title="tRowAbove">⬆ 행</button>
+    <button class="tbtn" data-tbl="rowBelow" data-i18n="rowBelow" data-i18n-title="tRowBelow">⬇ 행</button>
+    <button class="tbtn" data-tbl="rowDel" data-i18n="rowDel" data-i18n-title="tRowDel" style="color:var(--danger)">✕ 행</button>
+    <span class="sep"></span>
+    <button class="tbtn" data-tbl="colLeft" data-i18n="colLeft" data-i18n-title="tColLeft">⬅ 열</button>
+    <button class="tbtn" data-tbl="colRight" data-i18n="colRight" data-i18n-title="tColRight">➡ 열</button>
+    <button class="tbtn" data-tbl="colDel" data-i18n="colDel" data-i18n-title="tColDel" style="color:var(--danger)">✕ 열</button>
+    <span class="sep"></span>
+    <button class="tbtn" data-tbl="merge" data-i18n="mergeC" data-i18n-title="tMergeT">⧉ 병합</button>
+    <button class="tbtn" data-tbl="split" data-i18n="splitC" data-i18n-title="tSplitT">⊞ 분할</button>
+    <span class="sep"></span>
+    <button class="tbtn" data-tbl="tableDel" data-i18n="tableDel" data-i18n-title="tTableDel" style="color:var(--danger)">표 삭제</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="canvasWrap"><div id="canvasPad">
+    <iframe id="frame" sandbox="allow-same-origin"></iframe>
+  </div></div>
+
+  <div id="sourceWrap">
+    <div id="sourceHead">
+      <span data-i18n="srcTitle">HTML 소스</span>
+      <div class="spacer"></div>
+      <button class="btn" id="srcApply" data-i18n="srcApply">편집 화면에 적용</button>
+    </div>
+    <textarea id="srcText" spellcheck="false"></textarea>
+  </div>
+
+  <div id="inspector">
+    <div id="noSel"></div>
+    <div id="insPanel" style="display:none">
+      <div class="insSec"><h3 data-i18n="selected">선택된 요소</h3><div class="insBody">
+        <div><span id="selTag">&lt;p&gt;</span><span id="multiBadge"></span></div>
+        <div id="selMeta"></div>
+        <div class="opGrid">
+          <button class="btn" id="opCopy" data-i18n="opCopy">복사</button>
+          <button class="btn" id="opPaste" data-i18n="opPaste">붙여넣기</button>
+          <button class="btn" id="opDup" data-i18n="dup">복제</button>
+          <button class="btn dangerB" id="opDel" data-i18n="del">삭제</button>
+          <button class="btn" id="opUp" data-i18n="up">위로</button>
+          <button class="btn" id="opDown" data-i18n="down">아래로</button>
+          <button class="btn" id="opWrap" data-i18n="wrap">DIV로 감싸기</button>
+          <button class="btn" id="opUnwrap" data-i18n="unwrap">감싸기 해제</button>
+        </div>
+      </div></div>
+      <div class="insSec"><h3 data-i18n="quick">빠른 스타일</h3><div class="insBody">
+        <div class="row"><label data-i18n="fontSize">글자 크기</label>
+          <input id="stFont" type="number" min="1" step="1"><span class="unit">px</span></div>
+        <div class="row"><label data-i18n="color">글자 색</label>
+          <input id="stColor" type="color"><input id="stColorT" type="text"></div>
+        <div class="row"><label data-i18n="bg">배경 색</label>
+          <input id="stBg" type="color"><input id="stBgT" type="text" placeholder="transparent"></div>
+        <div class="row"><label data-i18n="align">정렬</label><div class="alignBtns">
+          <button data-al="left">⯇</button><button data-al="center">≡</button><button data-al="right">⯈</button>
+        </div></div>
+        <div class="row"><label data-i18n="pad">안쪽 여백</label><input id="stPad" type="text"></div>
+        <div class="row"><label data-i18n="mar">바깥 여백</label><input id="stMar" type="text"></div>
+        <div class="row"><label data-i18n="width">너비</label><input id="stW" type="text"></div>
+      </div></div>
+      <div class="insSec"><h3 data-i18n="attrs">속성 (Attributes)</h3><div class="insBody">
+        <div id="attrList"></div>
+        <button class="btn" id="attrAdd" data-i18n="addAttr" style="margin-top:9px;width:100%;justify-content:center">+ 속성 추가</button>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<div id="dataPanel">
+  <div id="dpHead">
+    <span class="tlabel" data-i18n="dpTitle">데이터 편집</span>
+    <select id="dpBlockSel"></select>
+    <span id="dpHint" data-i18n="dpHint"></span>
+    <div class="spacer"></div>
+    <button class="btn" id="dpAddRow" data-i18n="dpAddRow">+ 행</button>
+    <button class="btn dangerB" id="dpDelRow" data-i18n="dpDelRow">✕ 행</button>
+    <button class="btn" id="dpAddCol" data-i18n="dpAddCol">+ 열</button>
+    <button class="btn" id="dpRawBtn">{ } JSON</button>
+    <button class="btn primary" id="dpApplyBake" data-i18n="dpApplyBake">✓ 적용 + 다시 그리기</button>
+    <button class="btn" id="dpApply" data-i18n="dpApply" data-i18n-title="dpApplyT">적용만</button>
+    <button class="btn icon" id="dpClose">✕</button>
+  </div>
+  <div id="dpCrumbs"></div>
+  <div id="dpBody">
+    <table id="dpTable"></table>
+    <textarea id="dpRawText" spellcheck="false" style="display:none"></textarea>
+  </div>
+</div>
+
+<div id="statusbar">
+  <div id="crumbs"></div>
+  <span id="toast"></span>
+</div>
+
+<dialog id="findDlg">
+  <h2><span data-i18n="frTitle" class="grad">찾기 / 바꾸기</span> <span data-i18n="frScope">(문서 전체 HTML 대상)</span></h2>
+  <div class="row"><label data-i18n="frFind">찾을 내용</label><input id="frFind" type="text"></div>
+  <div class="row"><label data-i18n="frRepl">바꿀 내용</label><input id="frRepl" type="text"></div>
+  <div id="frCount"></div>
+  <div class="dlgBtns">
+    <button class="btn" id="frCountBtn" data-i18n="frCountBtn">개수 확인</button>
+    <button class="btn primary" id="frAllBtn" data-i18n="frAll">모두 바꾸기</button>
+    <button class="btn" id="frClose" data-i18n="close">닫기</button>
+  </div>
+</dialog>
+
+<dialog id="helpDlg">
+  <h2 data-i18n="help">단축키</h2>
+  <table id="helpTable"></table>
+  <div class="dlgBtns"><button class="btn primary" onclick="helpDlg.close()" data-i18n="close">닫기</button></div>
+</dialog>
+
+<dialog id="bakeDlg">
+  <h2 data-i18n="bakeDlgTitle">동적 문서 감지</h2>
+  <p id="bakeDlgMsg" style="color:var(--muted);line-height:1.75;max-width:430px;font-size:12.5px"></p>
+  <div class="dlgBtns">
+    <button class="btn" id="bakeSkip" data-i18n="bakeSkip">그대로 열기</button>
+    <button class="btn primary" id="bakeNow" data-i18n="bakeNow">⚡ 구워서 편집</button>
+  </div>
+</dialog>
+
+<input type="file" id="fileInput" accept=".html,.htm" style="display:none">
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const frame=$('#frame'), srcText=$('#srcText'), toastEl=$('#toast');
+const findDlg=$('#findDlg'), helpDlg=$('#helpDlg'), bakeDlg=$('#bakeDlg');
+let doc=null, fileHandle=null, fname='untitled.html', dirty=false;
+let sels=[], editingEl=null, preview=false, hoverEl=null;
+let hist=[], hIdx=-1; const MAXH=100;
+let loadAction='fresh', drag=null, suppressClick=false, toastTimer=null;
+const fsOK='showOpenFilePicker' in window;
+const primary=()=>sels[sels.length-1]||null;
+
+/* ═══════════ i18n ═══════════ */
+const I18N={
+ko:{newDoc:'새 문서',open:'열기',save:'저장',saveAs:'다른 이름으로',find:'찾기/바꾸기',
+preview:'미리보기',previewOn:'미리보기 중',viewEdit:'편집',viewSplit:'분할',viewSource:'소스',
+insert:'+ 삽입',insH:'제목 (H2)',insP:'문단',insUL:'글머리 목록',insOL:'번호 목록',insQ:'인용문',insPre:'코드 블록',
+insTable:'표 (3×3)',insImg:'이미지…',insA:'링크…',insBtn:'버튼',insDiv:'컨테이너 (DIV)',insHr:'구분선',
+fmt:'서식',tag:'태그',tagChange:'변경…',table:'표',
+rowAbove:'⬆ 행',rowBelow:'⬇ 행',rowDel:'✕ 행',colLeft:'⬅ 열',colRight:'➡ 열',colDel:'✕ 열',tableDel:'표 삭제',
+tRowAbove:'위에 행 추가',tRowBelow:'아래에 행 추가',tRowDel:'행 삭제',tColLeft:'왼쪽에 열 추가',
+tColRight:'오른쪽에 열 추가',tColDel:'열 삭제',tTableDel:'표 전체 삭제',tClearFmt:'서식 지우기',
+mergeC:'⧉ 병합',splitC:'⊞ 분할',tMergeT:'선택한 셀 병합 (Shift+클릭으로 복수 선택)',tSplitT:'병합된 셀 분할',
+tMerged:'셀 병합됨',tSplitDone:'셀 분할됨',
+tMergeNeed:'같은 표에서 직사각형이 되도록 셀을 2개 이상 선택하세요 (Shift+클릭)',
+tSplitNeed:'병합된(colspan/rowspan) 셀을 선택하세요',
+tImgAdded:'이미지 {n}개를 문서에 내장했습니다',
+confirmBigImg:'이미지 용량이 총 {n}MB입니다. HTML 파일이 그만큼 커집니다. 계속할까요?',
+bakeBtn:'⚡ 굽기',tBakeT:'스크립트를 한 번 실행해 정적 문서로 변환 (Bake)',
+bakeDlgTitle:'⚡ 동적 문서 감지',
+bakeDlgMsg:'이 파일에는 스크립트가 포함되어 있어, 편집 캔버스에서는 실행되지 않아 빈 화면이거나 일부만 보일 수 있습니다. 스크립트를 한 번 실행한 결과를 굳혀(Bake) 정적 문서로 변환하면 그대로 보면서 자유롭게 편집할 수 있습니다. 변환은 Ctrl+Z로 되돌릴 수 있습니다. 구워서 편집할까요?',
+bakeNow:'⚡ 구워서 편집',bakeSkip:'그대로 열기',
+tBaking:'굽는 중… 스크립트 실행 결과를 수집하고 있습니다',
+tBaked:'변환 완료 — 정적 문서로 편집합니다 (Ctrl+Z로 되돌리기 가능)',
+tNoScripts:'실행할 스크립트가 없는 정적 문서입니다',
+tBakeFail:'변환 실패',
+dataBtn:'📊 데이터',tDataT:'시각자료 데이터(JSON 블록)를 표로 편집',
+dpTitle:'데이터 편집',dpAddRow:'+ 행',dpDelRow:'✕ 행',dpAddCol:'+ 열',
+dpApply:'적용만',dpApplyT:'JSON 블록에만 기록하고 파일을 동적인 상태로 유지합니다. 화면(차트)은 바뀌지 않습니다',
+dpApplyBake:'✓ 적용 + 다시 그리기',
+dpHint:'행 번호 클릭 → 선택 · [4] ▸ 버튼으로 중첩 데이터 진입 · 숫자/true 자동 인식',
+tDataApplied:'기록됨 — 화면에 반영하려면 [✓ 적용 + 다시 그리기]를 누르세요',
+tDataBad:'JSON 형식 오류: {n}',tRowSel:'행 번호를 클릭해 행을 먼저 선택하세요',
+dpNewColName:'새 열(키) 이름:',tColExists:'이미 있는 키입니다',
+dpNewKey:'새 키 이름:',dpDrillT:'안의 데이터를 표로 열기',
+tNoRenderer:'렌더링 스크립트가 없어 다시 그리지 못했습니다 (데이터는 기록됨). 원본 동적 파일에서 다시 시도하세요',
+tPatchResult:'렌더러가 없어 화면 요소를 직접 수정했습니다 — 반영 {a}건 · 자동 반영 불가 {b}건',
+tPatchNone:'렌더러가 없고 화면에 자동 반영할 수 있는 변경이 없습니다 — 캔버스에서 직접 수정하세요',
+selected:'선택된 요소',quick:'빠른 스타일',attrs:'속성 (Attributes)',multiN:'+{n}개 동시 편집',
+fontSize:'글자 크기',color:'글자 색',bg:'배경 색',align:'정렬',pad:'안쪽 여백',mar:'바깥 여백',width:'너비',
+dup:'복제',del:'삭제',up:'위로',down:'아래로',wrap:'DIV로 감싸기',unwrap:'감싸기 해제',addAttr:'+ 속성 추가',
+opCopy:'복사',opPaste:'붙여넣기',
+tCopied:'{n}개 복사됨 — 붙여넣을 위치를 선택하고 Ctrl+V (Ctrl+Shift+V: 안에 붙여넣기)',
+tPasted:'붙여넣었습니다',tClipEmpty:'복사된 요소가 없습니다 (요소 선택 후 Ctrl+C)',
+attrName:'이름',attrVal:'값',srcTitle:'HTML 소스',srcApply:'편집 화면에 적용',
+frTitle:'찾기 / 바꾸기',frScope:'(문서 전체 HTML 대상)',frFind:'찾을 내용',frRepl:'바꿀 내용',
+frCountBtn:'개수 확인',frAll:'모두 바꾸기',close:'닫기',
+frMatches:'일치: {n}건',frNone:'일치하는 내용이 없습니다.',frDone:'{n}건 바꿈',help:'단축키',
+noSelHTML:'요소를 클릭하면 속성과 스타일이 여기에 표시됩니다.<br><br>· 클릭 — 선택<br>· <span class="hintK">Shift/Ctrl</span>+클릭 — 복수 선택<br>· 더블클릭 — 텍스트 편집<br>· 드래그 — 이동<br>· <span class="hintK">Del</span> — 삭제',
+confirmDiscard:'저장하지 않은 변경 사항이 있습니다. 계속할까요?',
+pImgUrl:'이미지 URL 또는 상대 경로:',pAlt:'대체 텍스트(alt):',pHref:'링크 주소(href):',pText:'표시할 텍스트:',linkDefault:'링크',
+tOpened:'파일을 열었습니다',tSaved:'저장됨',tSaveFail:'저장 실패',tOpenFail:'열기 실패',tDl:'다운로드로 저장했습니다',
+tDel:'삭제됨',tDup:'복제됨',tMoved:'이동했습니다',tNoMove:'더 이동할 수 없습니다',tSelFirst:'요소를 먼저 선택하세요',
+tCellFirst:'표 안의 셀을 먼저 선택하세요',tRowAdded:'행 추가됨',tRowDeleted:'행 삭제됨',tColAdded:'열 추가됨',
+tColDeleted:'열 삭제됨',tTableDeleted:'표 삭제됨',tInserted:'요소 삽입됨',tUnwrapped:'감싸기 해제됨',
+tLinkTo:'링크 대상: ',tPrevOn:'미리보기 모드 (편집 잠금)',tPrevOff:'편집 모드',tBadAttr:'잘못된 속성 이름입니다',
+tFallbackOpen:'파일을 열었습니다 (저장은 다운로드 방식)',
+tNoFS:'이 브라우저는 파일 직접 저장 미지원 → 다운로드 방식. Edge/Chrome 권장',
+helpRows:[['Ctrl+O / S / Shift+S','열기 / 저장 / 다른 이름으로'],['Ctrl+Z / Ctrl+Y','실행 취소 / 다시 실행 (100단계)'],
+['Ctrl+H','찾기/바꾸기'],['Shift/Ctrl + 클릭','복수 선택 → 스타일·삭제·이동 동시 적용'],
+['셀 Shift+클릭 → ⧉ 병합','직사각형으로 선택한 셀 병합 / ⊞로 분할'],
+['이미지 파일 드래그&드롭','Base64로 문서에 내장 삽입'],
+['📊 데이터 패널','application/json 블록을 표로 편집 → ✓ 적용 + 다시 그리기'],
+['Ctrl+C / V / X','요소 복사 / 선택 위치에 붙여넣기 / 잘라내기 (Ctrl+Shift+V: 안에)'],
+['방향키 (요소 선택 중)','1px 미세 이동 · Shift=10px · Ctrl=크기 조절'],
+['Del / Ctrl+D','선택 요소 삭제 / 복제'],['Alt + ↑ / ↓','요소 위/아래 이동'],
+['Tab (표 마지막 셀)','새 행 자동 추가'],['더블클릭 / 드래그','텍스트 편집 / 요소 이동'],['Esc','선택 해제 / 편집 종료']],
+tplTitle:'새 문서',tplH:'새 문서',
+tplP1:'여기는 편집 캔버스입니다. 요소를 <strong>클릭</strong>해서 선택하고, <strong>더블클릭</strong>해서 텍스트를 고치고, <strong>Shift+클릭</strong>으로 여러 개를 한꺼번에 선택할 수 있습니다.',
+tplT1:'항목',tplT2:'내용',tplT3:'비고',
+tplR1:['표 편집','셀 선택 후 상단 [표] 도구로 행·열 추가/삭제','colspan/rowspan 지원'],
+tplR2:['저장','Ctrl+S 로 원본 파일에 바로 저장','Edge/Chrome'],
+tplP2:'기존 HTML 파일은 상단 <em>열기</em> 버튼(Ctrl+O)으로 불러오세요.'},
+ja:{newDoc:'新規',open:'開く',save:'保存',saveAs:'名前を付けて保存',find:'検索/置換',
+preview:'プレビュー',previewOn:'プレビュー中',viewEdit:'編集',viewSplit:'分割',viewSource:'ソース',
+insert:'+ 挿入',insH:'見出し (H2)',insP:'段落',insUL:'箇条書きリスト',insOL:'番号付きリスト',insQ:'引用',insPre:'コードブロック',
+insTable:'表 (3×3)',insImg:'画像…',insA:'リンク…',insBtn:'ボタン',insDiv:'コンテナ (DIV)',insHr:'区切り線',
+fmt:'書式',tag:'タグ',tagChange:'変更…',table:'表',
+rowAbove:'⬆ 行',rowBelow:'⬇ 行',rowDel:'✕ 行',colLeft:'⬅ 列',colRight:'➡ 列',colDel:'✕ 列',tableDel:'表を削除',
+tRowAbove:'上に行を追加',tRowBelow:'下に行を追加',tRowDel:'行を削除',tColLeft:'左に列を追加',
+tColRight:'右に列を追加',tColDel:'列を削除',tTableDel:'表全体を削除',tClearFmt:'書式をクリア',
+mergeC:'⧉ 結合',splitC:'⊞ 分割',tMergeT:'選択したセルを結合 (Shift+クリックで複数選択)',tSplitT:'結合されたセルを分割',
+tMerged:'セルを結合しました',tSplitDone:'セルを分割しました',
+tMergeNeed:'同じ表内で長方形になるようにセルを2つ以上選択してください (Shift+クリック)',
+tSplitNeed:'結合された(colspan/rowspan)セルを選択してください',
+tImgAdded:'画像{n}枚をドキュメントに埋め込みました',
+confirmBigImg:'画像の合計サイズは{n}MBです。HTMLファイルがその分大きくなります。続行しますか？',
+bakeBtn:'⚡ ベイク',tBakeT:'スクリプトを一度実行して静的ドキュメントに変換 (Bake)',
+bakeDlgTitle:'⚡ 動的ドキュメントを検出',
+bakeDlgMsg:'このファイルにはスクリプトが含まれており、編集キャンバスでは実行されないため、空白または一部のみ表示される場合があります。スクリプトを一度実行した結果を固めて（Bake）静的ドキュメントに変換すると、そのまま表示しながら自由に編集できます。変換はCtrl+Zで元に戻せます。ベイクして編集しますか？',
+bakeNow:'⚡ ベイクして編集',bakeSkip:'そのまま開く',
+tBaking:'ベイク中… スクリプトの実行結果を収集しています',
+tBaked:'変換完了 — 静的ドキュメントとして編集します (Ctrl+Zで戻せます)',
+tNoScripts:'実行するスクリプトのない静的ドキュメントです',
+tBakeFail:'変換に失敗',
+dataBtn:'📊 データ',tDataT:'ビジュアルのデータ(JSONブロック)を表で編集',
+dpTitle:'データ編集',dpAddRow:'+ 行',dpDelRow:'✕ 行',dpAddCol:'+ 列',
+dpApply:'反映のみ',dpApplyT:'JSONブロックにのみ記録し、ファイルを動的なまま維持します。画面（チャート）は変わりません',
+dpApplyBake:'✓ 反映 + 再描画',
+dpHint:'行番号クリック → 選択 · [4] ▸ ボタンでネストしたデータへ · 数値/trueを自動認識',
+tDataApplied:'記録しました — 画面に反映するには[✓ 反映 + 再描画]を押してください',
+tDataBad:'JSON形式エラー: {n}',tRowSel:'行番号をクリックして行を先に選択してください',
+dpNewColName:'新しい列(キー)名:',tColExists:'既に存在するキーです',
+dpNewKey:'新しいキー名:',dpDrillT:'中のデータを表で開く',
+tNoRenderer:'描画スクリプトがないため再描画できませんでした（データは記録済み）。元の動的ファイルでやり直してください',
+tPatchResult:'レンダラーがないため画面要素を直接修正しました — 反映 {a}件 · 自動反映不可 {b}件',
+tPatchNone:'レンダラーがなく、画面へ自動反映できる変更もありません — キャンバスで直接修正してください',
+selected:'選択中の要素',quick:'クイックスタイル',attrs:'属性 (Attributes)',multiN:'+{n}個を同時編集',
+fontSize:'文字サイズ',color:'文字色',bg:'背景色',align:'配置',pad:'内側余白',mar:'外側余白',width:'幅',
+dup:'複製',del:'削除',up:'上へ',down:'下へ',wrap:'DIVで囲む',unwrap:'囲み解除',addAttr:'+ 属性を追加',
+opCopy:'コピー',opPaste:'貼り付け',
+tCopied:'{n}個コピー — 貼り付け先を選択して Ctrl+V (Ctrl+Shift+V: 中に貼り付け)',
+tPasted:'貼り付けました',tClipEmpty:'コピーされた要素がありません (要素選択後 Ctrl+C)',
+attrName:'名前',attrVal:'値',srcTitle:'HTMLソース',srcApply:'編集画面に反映',
+frTitle:'検索 / 置換',frScope:'(ドキュメント全体のHTMLが対象)',frFind:'検索文字列',frRepl:'置換文字列',
+frCountBtn:'件数を確認',frAll:'すべて置換',close:'閉じる',
+frMatches:'一致: {n}件',frNone:'一致する内容がありません。',frDone:'{n}件を置換',help:'ショートカット',
+noSelHTML:'要素をクリックすると、属性とスタイルがここに表示されます。<br><br>· クリック — 選択<br>· <span class="hintK">Shift/Ctrl</span>+クリック — 複数選択<br>· ダブルクリック — テキスト編集<br>· ドラッグ — 移動<br>· <span class="hintK">Del</span> — 削除',
+confirmDiscard:'保存されていない変更があります。続行しますか？',
+pImgUrl:'画像のURLまたは相対パス:',pAlt:'代替テキスト(alt):',pHref:'リンク先(href):',pText:'表示テキスト:',linkDefault:'リンク',
+tOpened:'ファイルを開きました',tSaved:'保存しました',tSaveFail:'保存に失敗',tOpenFail:'読み込みに失敗',tDl:'ダウンロードで保存しました',
+tDel:'削除しました',tDup:'複製しました',tMoved:'移動しました',tNoMove:'これ以上移動できません',tSelFirst:'先に要素を選択してください',
+tCellFirst:'表の中のセルを先に選択してください',tRowAdded:'行を追加',tRowDeleted:'行を削除',tColAdded:'列を追加',
+tColDeleted:'列を削除',tTableDeleted:'表を削除',tInserted:'要素を挿入',tUnwrapped:'囲みを解除',
+tLinkTo:'リンク先: ',tPrevOn:'プレビューモード (編集ロック)',tPrevOff:'編集モード',tBadAttr:'無効な属性名です',
+tFallbackOpen:'ファイルを開きました (保存はダウンロード方式)',
+tNoFS:'このブラウザは直接保存に未対応 → ダウンロード方式。Edge/Chrome推奨',
+helpRows:[['Ctrl+O / S / Shift+S','開く / 保存 / 名前を付けて保存'],['Ctrl+Z / Ctrl+Y','元に戻す / やり直し (100段階)'],
+['Ctrl+H','検索/置換'],['Shift/Ctrl + クリック','複数選択 → スタイル・削除・移動を一括適用'],
+['セルをShift+クリック → ⧉ 結合','長方形に選択したセルを結合 / ⊞で分割'],
+['画像ファイルをドラッグ&ドロップ','Base64でドキュメントに埋め込み挿入'],
+['📊 データパネル','application/jsonブロックを表で編集 → ✓ 反映 + 再描画'],
+['Ctrl+C / V / X','要素のコピー / 選択位置に貼り付け / 切り取り (Ctrl+Shift+V: 中に)'],
+['矢印キー (要素選択中)','1px微調整 · Shift=10px · Ctrl=サイズ変更'],
+['Del / Ctrl+D','選択要素の削除 / 複製'],['Alt + ↑ / ↓','要素を上下に移動'],
+['Tab (表の最終セル)','新しい行を自動追加'],['ダブルクリック / ドラッグ','テキスト編集 / 要素移動'],['Esc','選択解除 / 編集終了']],
+tplTitle:'新規ドキュメント',tplH:'新規ドキュメント',
+tplP1:'ここは編集キャンバスです。要素を<strong>クリック</strong>して選択、<strong>ダブルクリック</strong>でテキスト編集、<strong>Shift+クリック</strong>で複数選択できます。',
+tplT1:'項目',tplT2:'内容',tplT3:'備考',
+tplR1:['表の編集','セル選択後、上部の[表]ツールで行・列を追加/削除','colspan/rowspan対応'],
+tplR2:['保存','Ctrl+S で元ファイルに直接保存','Edge/Chrome'],
+tplP2:'既存のHTMLファイルは上部の<em>開く</em>ボタン(Ctrl+O)で読み込めます。'},
+en:{newDoc:'New',open:'Open',save:'Save',saveAs:'Save As',find:'Find/Replace',
+preview:'Preview',previewOn:'Previewing',viewEdit:'Edit',viewSplit:'Split',viewSource:'Source',
+insert:'+ Insert',insH:'Heading (H2)',insP:'Paragraph',insUL:'Bullet list',insOL:'Numbered list',insQ:'Quote',insPre:'Code block',
+insTable:'Table (3×3)',insImg:'Image…',insA:'Link…',insBtn:'Button',insDiv:'Container (DIV)',insHr:'Divider',
+fmt:'Format',tag:'Tag',tagChange:'Change…',table:'Table',
+rowAbove:'⬆ Row',rowBelow:'⬇ Row',rowDel:'✕ Row',colLeft:'⬅ Col',colRight:'➡ Col',colDel:'✕ Col',tableDel:'Del table',
+tRowAbove:'Insert row above',tRowBelow:'Insert row below',tRowDel:'Delete row',tColLeft:'Insert column left',
+tColRight:'Insert column right',tColDel:'Delete column',tTableDel:'Delete entire table',tClearFmt:'Clear formatting',
+mergeC:'⧉ Merge',splitC:'⊞ Split',tMergeT:'Merge selected cells (Shift+click to multi-select)',tSplitT:'Split a merged cell',
+tMerged:'Cells merged',tSplitDone:'Cell split',
+tMergeNeed:'Select 2+ cells forming a rectangle in the same table (Shift+click)',
+tSplitNeed:'Select a merged (colspan/rowspan) cell',
+tImgAdded:'Embedded {n} image(s) into the document',
+confirmBigImg:'Total image size is {n} MB — the HTML file will grow by that amount. Continue?',
+bakeBtn:'⚡ Bake',tBakeT:'Run scripts once and convert to a static document (Bake)',
+bakeDlgTitle:'⚡ Dynamic document detected',
+bakeDlgMsg:'This file contains scripts. The editing canvas does not run them, so it may look blank or partially rendered. Baking runs the scripts once and freezes the result into a static document you can see and edit freely. You can undo with Ctrl+Z. Bake and edit?',
+bakeNow:'⚡ Bake & edit',bakeSkip:'Open as-is',
+tBaking:'Baking… collecting the script execution result',
+tBaked:'Done — editing as a static document (Ctrl+Z to revert)',
+tNoScripts:'No executable scripts — already a static document',
+tBakeFail:'Bake failed',
+dataBtn:'📊 Data',tDataT:'Edit visualization data (JSON block) as a table',
+dpTitle:'Data editor',dpAddRow:'+ Row',dpDelRow:'✕ Row',dpAddCol:'+ Col',
+dpApply:'Write only',dpApplyT:'Writes to the JSON block only and keeps the file dynamic. The canvas (chart) does not change',
+dpApplyBake:'✓ Apply + Redraw',
+dpHint:'Click a row number to select · [4] ▸ opens nested data · numbers/true auto-detected',
+tDataApplied:'Written — press [✓ Apply + Redraw] to update the canvas',
+tDataBad:'Invalid JSON: {n}',tRowSel:'Click a row number to select a row first',
+dpNewColName:'New column (key) name:',tColExists:'Key already exists',
+dpNewKey:'New key name:',dpDrillT:'Open nested data as a table',
+tNoRenderer:'No renderer script found, so it could not be re-drawn (data was written). Retry from the original dynamic file',
+tPatchResult:'No renderer — patched the canvas directly: {a} applied · {b} not auto-appliable',
+tPatchNone:'No renderer and no auto-appliable changes — edit the canvas directly',
+selected:'Selected element',quick:'Quick styles',attrs:'Attributes',multiN:'+{n} multi-edit',
+fontSize:'Font size',color:'Text color',bg:'Background',align:'Align',pad:'Padding',mar:'Margin',width:'Width',
+dup:'Duplicate',del:'Delete',up:'Move up',down:'Move down',wrap:'Wrap in DIV',unwrap:'Unwrap',addAttr:'+ Add attribute',
+opCopy:'Copy',opPaste:'Paste',
+tCopied:'Copied {n} — select a target, then Ctrl+V (Ctrl+Shift+V: paste inside)',
+tPasted:'Pasted',tClipEmpty:'Clipboard empty (select an element, then Ctrl+C)',
+attrName:'name',attrVal:'value',srcTitle:'HTML Source',srcApply:'Apply to canvas',
+frTitle:'Find / Replace',frScope:'(entire document HTML)',frFind:'Find',frRepl:'Replace with',
+frCountBtn:'Count',frAll:'Replace all',close:'Close',
+frMatches:'Matches: {n}',frNone:'No matches found.',frDone:'Replaced {n}',help:'Shortcuts',
+noSelHTML:'Click an element to see its attributes and styles here.<br><br>· Click — select<br>· <span class="hintK">Shift/Ctrl</span>+click — multi-select<br>· Double-click — edit text<br>· Drag — move<br>· <span class="hintK">Del</span> — delete',
+confirmDiscard:'You have unsaved changes. Continue?',
+pImgUrl:'Image URL or relative path:',pAlt:'Alt text:',pHref:'Link URL (href):',pText:'Link text:',linkDefault:'link',
+tOpened:'File opened',tSaved:'Saved',tSaveFail:'Save failed',tOpenFail:'Open failed',tDl:'Saved as download',
+tDel:'Deleted',tDup:'Duplicated',tMoved:'Moved',tNoMove:'Cannot move further',tSelFirst:'Select an element first',
+tCellFirst:'Select a cell inside a table first',tRowAdded:'Row added',tRowDeleted:'Row deleted',tColAdded:'Column added',
+tColDeleted:'Column deleted',tTableDeleted:'Table deleted',tInserted:'Element inserted',tUnwrapped:'Unwrapped',
+tLinkTo:'Link target: ',tPrevOn:'Preview mode (editing locked)',tPrevOff:'Edit mode',tBadAttr:'Invalid attribute name',
+tFallbackOpen:'File opened (saving uses download)',
+tNoFS:'This browser cannot save files directly → download mode. Edge/Chrome recommended',
+helpRows:[['Ctrl+O / S / Shift+S','Open / Save / Save As'],['Ctrl+Z / Ctrl+Y','Undo / Redo (100 steps)'],
+['Ctrl+H','Find/Replace'],['Shift/Ctrl + click','Multi-select → style, delete, move together'],
+['Shift+click cells → ⧉ Merge','Merge a rectangular cell selection / ⊞ to split'],
+['Drag & drop image files','Embed into the document as Base64'],
+['📊 Data panel','Edit application/json blocks as a table → ✓ Apply + Redraw'],
+['Ctrl+C / V / X','Copy / paste at selection / cut (Ctrl+Shift+V: paste inside)'],
+['Arrow keys (selected)','Nudge 1px · Shift=10px · Ctrl=resize'],
+['Del / Ctrl+D','Delete / duplicate selection'],['Alt + ↑ / ↓','Move element up/down'],
+['Tab (last table cell)','Auto-add a new row'],['Double-click / drag','Edit text / move element'],['Esc','Deselect / stop editing']],
+tplTitle:'New Document',tplH:'New Document',
+tplP1:'This is the editing canvas. <strong>Click</strong> to select, <strong>double-click</strong> to edit text, <strong>Shift+click</strong> to select multiple elements.',
+tplT1:'Item',tplT2:'Description',tplT3:'Note',
+tplR1:['Table editing','Select a cell, then use the [Table] tools to add/delete rows & columns','colspan/rowspan aware'],
+tplR2:['Saving','Ctrl+S writes straight back to the original file','Edge/Chrome'],
+tplP2:'Open an existing HTML file with the <em>Open</em> button (Ctrl+O).'}
+};
+let LANG='ko';
+try{ LANG=localStorage.getItem('hs_lang')||'ko'; }catch(e){}
+const t=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.ko[k]??k;
+const tn=(k,n)=>t(k).replace('{n}',n);
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  $$('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  $$('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
+  $('#noSel').innerHTML=t('noSelHTML');
+  $('#bakeDlgMsg').textContent=t('bakeDlgMsg');
+  $('#helpTable').innerHTML=t('helpRows').map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  $('#modeBtn').textContent=preview?t('previewOn'):t('preview');
+  renderInspector();
+}
+$('#langSel').addEventListener('change',e=>{
+  LANG=e.target.value;
+  try{ localStorage.setItem('hs_lang',LANG); }catch(err){}
+  applyI18n();
+});
+
+function TEMPLATE(){
+  const r1=t('tplR1'),r2=t('tplR2');
+  return `<!DOCTYPE html>
+<html lang="${LANG}">
+<head>
+<meta charset="UTF-8">
+<title>${t('tplTitle')}</title>
+<style>
+  body{font-family:'Segoe UI','Malgun Gothic','Hiragino Sans',sans-serif;max-width:860px;margin:40px auto;padding:0 24px;color:#23262e;line-height:1.7}
+  h1{border-bottom:3px solid #8b5cf6;padding-bottom:8px}
+  table{border-collapse:collapse;width:100%;margin:16px 0}
+  th,td{border:1px solid #c9ced8;padding:8px 12px;text-align:left}
+  th{background:#f3f0fc}
+</style>
+</head>
+<body>
+  <h1>${t('tplH')}</h1>
+  <p>${t('tplP1')}</p>
+  <table>
+    <tbody>
+      <tr><th>${t('tplT1')}</th><th>${t('tplT2')}</th><th>${t('tplT3')}</th></tr>
+      <tr><td>${r1[0]}</td><td>${r1[1]}</td><td>${r1[2]}</td></tr>
+      <tr><td>${r2[0]}</td><td>${r2[1]}</td><td>${r2[2]}</td></tr>
+    </tbody>
+  </table>
+  <p>${t('tplP2')}</p>
+</body>
+</html>`;
+}
+
+/* ═══════════ document lifecycle ═══════════ */
+function setSrcdoc(html, action){ loadAction=action; frame.srcdoc=html; }
+
+frame.addEventListener('load', ()=>{
+  doc=frame.contentDocument; if(!doc) return;
+  setupDoc();
+  hist=[buildHTML()]; hIdx=0; setDirty(false);
+  lastDynamicHTML=readSourceBlock(doc); /* baked files carry their dynamic source */
+  clearSel(); refreshSrc(true); updateUndoBtns();
+  updateDataBtn(); if(dpOpen) renderDataPanel();
+  if(hasExecutableScripts(doc)&&!bakeDlg.open)
+    setTimeout(()=>{ if(!bakeDlg.open) bakeDlg.showModal(); },150);
+});
+
+/* In-place document swap (undo/redo/source-apply): keeps scroll position,
+   keeps the same document object so delegated listeners stay bound. */
+function swapDoc(html, mode){ /* mode: 'restore' | 'apply' */
+  if(!doc){ setSrcdoc(html,'fresh'); return; }
+  const w=frame.contentWindow;
+  const sx=w?w.scrollX:0, sy=w?w.scrollY:0;
+  const nd=new DOMParser().parseFromString(html,'text/html');
+  [...doc.documentElement.attributes].forEach(a=>doc.documentElement.removeAttribute(a.name));
+  [...nd.documentElement.attributes].forEach(a=>doc.documentElement.setAttribute(a.name,a.value));
+  doc.documentElement.innerHTML=nd.documentElement.innerHTML;
+  injectStyle();
+  doc.documentElement.toggleAttribute('data-le-edit',!preview);
+  sels=[]; editingEl=null; hoverEl=null; drag=null;
+  if(mode==='apply') snapshot();
+  else{ setDirty(true); refreshSrc(true); }
+  paintSel(); renderInspector(); renderCrumbs(); updateTableTools(); updateUndoBtns();
+  updateDataBtn(); if(dpOpen) renderDataPanel();
+  if(w) w.scrollTo(sx,sy);
+}
+
+function injectStyle(){
+  if(doc.getElementById('__le_style')) return;
+  const st=doc.createElement('style'); st.id='__le_style';
+  st.textContent=`
+    [data-le-hover]{outline:1.5px dashed #a78bfa!important;outline-offset:1px}
+    [data-le-sel]{outline:2px solid #8b5cf6!important;outline-offset:1px}
+    [data-le-primary]{outline:2px solid #8b5cf6!important;outline-offset:1px;box-shadow:0 0 0 4px rgba(236,72,153,.30)!important}
+    [contenteditable="true"]{outline:2px solid #22d3ee!important;outline-offset:1px;cursor:text;box-shadow:none!important}
+    html[data-le-edit] td,html[data-le-edit] th{outline:1px dotted rgba(139,116,200,.45)}
+    html[data-le-edit] a{cursor:default}
+    #__le_ind{position:absolute;height:3px;background:linear-gradient(90deg,#8b5cf6,#ec4899);border-radius:2px;z-index:2147483647;pointer-events:none;box-shadow:0 0 8px rgba(236,72,153,.9)}
+    html,body{min-height:100%}
+  `;
+  doc.head.appendChild(st);
+}
+function setupDoc(){
+  injectStyle();
+  doc.documentElement.toggleAttribute('data-le-edit', !preview);
+  bindDocEvents();
+}
+
+function pick(tg){
+  if(!tg) return null;
+  let n=tg.nodeType===1?tg:tg.parentElement;
+  if(!n) return null;
+  if(n.id==='__le_style'||n.id==='__le_ind') return null;
+  if(n===doc.documentElement) return doc.body;
+  return n;
+}
+
+/* ═══════════ serialization / history ═══════════ */
+function cleanClone(){
+  const c=doc.documentElement.cloneNode(true);
+  c.querySelectorAll('#__le_style,#__le_ind').forEach(n=>n.remove());
+  c.removeAttribute('data-le-edit');
+  c.querySelectorAll('*').forEach(n=>{
+    [...n.attributes].forEach(a=>{
+      if(a.name.startsWith('data-le-')||a.name==='contenteditable') n.removeAttribute(a.name);
+    });
+  });
+  return c;
+}
+function buildHTML(){ return '<!DOCTYPE html>\n'+cleanClone().outerHTML; }
+function snapshot(){
+  const s=buildHTML();
+  if(hist[hIdx]===s) return;
+  hist=hist.slice(0,hIdx+1); hist.push(s);
+  if(hist.length>MAXH) hist.shift();
+  hIdx=hist.length-1;
+  setDirty(true); refreshSrc(); updateUndoBtns(); updateDataBtn();
+}
+function undo(){ if(hIdx<=0) return; hIdx--; swapDoc(hist[hIdx],'restore'); }
+function redo(){ if(hIdx>=hist.length-1) return; hIdx++; swapDoc(hist[hIdx],'restore'); }
+function updateUndoBtns(){ $('#undoBtn').disabled=hIdx<=0; $('#redoBtn').disabled=hIdx>=hist.length-1; }
+function setDirty(v){ dirty=v; $('#dirtyDot').style.visibility=v?'visible':'hidden'; }
+function updateTitle(){ $('#fileName').textContent=fname; document.title=fname+' — HTML Studio'; }
+
+/* ═══════════ selection (multi) ═══════════ */
+function docSort(arr){
+  return arr.slice().sort((a,b)=>(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING)?-1:1);
+}
+function paintSel(){
+  doc.querySelectorAll('[data-le-sel],[data-le-primary]').forEach(n=>{
+    n.removeAttribute('data-le-sel'); n.removeAttribute('data-le-primary');
+  });
+  sels=sels.filter(n=>doc.contains(n));
+  sels.forEach(n=>n.setAttribute('data-le-sel',''));
+  const p=primary(); if(p) p.setAttribute('data-le-primary','');
+}
+function select(el, additive){
+  if(editingEl&&el!==editingEl) endEdit();
+  if(!el){ sels=[]; }
+  else if(additive){
+    const i=sels.indexOf(el);
+    if(i>=0) sels.splice(i,1); else sels.push(el);
+  } else sels=[el];
+  paintSel(); renderInspector(); renderCrumbs(); updateTableTools();
+}
+function clearSel(){ select(null); }
+function reSelect(){ sels=sels.filter(n=>doc.contains(n)); paintSel(); renderInspector(); renderCrumbs(); updateTableTools(); }
+function clearHover(){ if(hoverEl&&doc&&doc.contains(hoverEl)) hoverEl.removeAttribute('data-le-hover'); hoverEl=null; }
+
+const NO_TEXT_EDIT=['IMG','HR','BR','TABLE','THEAD','TBODY','TFOOT','TR','IFRAME','INPUT','SELECT','VIDEO','AUDIO','SVG','CANVAS','BODY'];
+function startEdit(el){
+  if(!el||NO_TEXT_EDIT.includes(el.tagName)) return;
+  endEdit();
+  el.setAttribute('contenteditable','true');
+  editingEl=el; el.focus(); clearHover();
+}
+function endEdit(){
+  if(!editingEl) return;
+  const el=editingEl; editingEl=null;
+  if(doc&&doc.contains(el)) el.removeAttribute('contenteditable');
+  snapshot();
+}
+
+/* ═══════════ iframe events ═══════════ */
+function bindDocEvents(){
+  doc.addEventListener('mouseover',e=>{
+    if(preview||editingEl||drag) return;
+    const tg=pick(e.target); clearHover();
+    if(tg&&!sels.includes(tg)&&tg!==doc.body){ hoverEl=tg; tg.setAttribute('data-le-hover',''); }
+  });
+  doc.addEventListener('mouseleave',clearHover);
+
+  doc.addEventListener('click',e=>{
+    if(suppressClick){ suppressClick=false; e.preventDefault(); return; }
+    const a=e.target.closest&&e.target.closest('a');
+    if(preview){ if(a){ e.preventDefault(); flash(t('tLinkTo')+(a.getAttribute('href')||'—')); } return; }
+    if(a) e.preventDefault();
+    const additive=e.shiftKey||e.ctrlKey||e.metaKey;
+    const tg=pick(e.target);
+    if(editingEl&&tg===editingEl) return;
+    if(tg===doc.body||!tg){ if(!additive) clearSel(); return; }
+    select(tg, additive);
+  },true);
+
+  doc.addEventListener('dblclick',e=>{
+    if(preview) return;
+    const tg=pick(e.target); if(!tg) return;
+    e.preventDefault();
+    if(tg.tagName==='TABLE'||tg.tagName==='TR'){
+      const c=e.target.closest('td,th'); if(c){ select(c); startEdit(c); } return;
+    }
+    select(tg); startEdit(tg);
+  });
+
+  doc.addEventListener('keydown',handleKeys);
+
+  /* drag-to-reorder (moves all selected) */
+  doc.addEventListener('mousedown',e=>{
+    if(preview||editingEl||e.shiftKey||e.ctrlKey||e.metaKey) return;
+    const tg=pick(e.target);
+    if(tg&&sels.includes(tg)&&tg!==doc.body)
+      drag={sx:e.clientX,sy:e.clientY,active:false,target:null,before:true};
+  });
+  doc.addEventListener('mousemove',e=>{
+    if(!drag) return;
+    if(!drag.active){
+      if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<6) return;
+      drag.active=true; doc.body.style.userSelect='none';
+    }
+    const els=doc.elementsFromPoint(e.clientX,e.clientY);
+    let cand=null;
+    for(const el of els){
+      const p=pick(el);
+      if(p&&p!==doc.body&&p.id!=='__le_ind'&&!sels.includes(p)&&!sels.some(s=>s.contains(p))){ cand=p; break; }
+    }
+    const ind=getIndicator();
+    if(!cand){ ind.style.display='none'; drag.target=null; return; }
+    const r=cand.getBoundingClientRect();
+    drag.target=cand; drag.before=e.clientY < r.top+r.height/2;
+    const w=frame.contentWindow;
+    ind.style.display='block';
+    ind.style.left=(r.left+w.scrollX)+'px';
+    ind.style.width=r.width+'px';
+    ind.style.top=((drag.before?r.top:r.bottom)+w.scrollY-1.5)+'px';
+  });
+  doc.addEventListener('mouseup',()=>{
+    if(!drag) return;
+    const d=drag; drag=null;
+    doc.body.style.userSelect='';
+    const ind=doc.getElementById('__le_ind'); if(ind) ind.style.display='none';
+    if(d.active){
+      suppressClick=true;
+      if(d.target&&d.target.parentElement){
+        const ordered=docSort(sels);
+        if(d.before) ordered.forEach(n=>d.target.parentElement.insertBefore(n,d.target));
+        else{ let anchor=d.target; ordered.forEach(n=>{ anchor.after(n); anchor=n; }); }
+        snapshot(); reSelect(); flash(t('tMoved'),'ok');
+      }
+    }
+  });
+
+  doc.addEventListener('input',()=>{ if(editingEl) setDirty(true); });
+  doc.addEventListener('focusout',e=>{ if(editingEl&&e.target===editingEl) endEdit(); });
+  bindDrop(doc);
+}
+function getIndicator(){
+  let ind=doc.getElementById('__le_ind');
+  if(!ind){ ind=doc.createElement('div'); ind.id='__le_ind'; doc.body.appendChild(ind); }
+  return ind;
+}
+
+/* ═══════════ keyboard ═══════════ */
+function handleKeys(e){
+  const ctl=e.ctrlKey||e.metaKey;
+  const tgt=e.target;
+  const inField=!!(tgt&&tgt.tagName&&(tgt.tagName==='INPUT'||tgt.tagName==='TEXTAREA'||tgt.tagName==='SELECT'||tgt.isContentEditable));
+  if(ctl&&e.key.toLowerCase()==='s'){ e.preventDefault(); e.shiftKey?saveAs():save(); return; }
+  if(ctl&&e.key.toLowerCase()==='o'){ e.preventDefault(); openFile(); return; }
+  if(ctl&&e.key.toLowerCase()==='h'){ e.preventDefault(); openFind(); return; }
+  if(editingEl){
+    if(e.key==='Escape'){ e.preventDefault(); endEdit(); return; }
+    if(e.key==='Tab'){ tabInTable(e); return; }
+    return; /* text-level shortcuts stay native */
+  }
+  if(inField) return; /* typing in inspector/source/data fields → never hijack */
+  if(ctl&&e.key.toLowerCase()==='z'&&!e.shiftKey){ e.preventDefault(); undo(); return; }
+  if(ctl&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){ e.preventDefault(); redo(); return; }
+  if(ctl&&e.key.toLowerCase()==='d'&&sels.length){ e.preventDefault(); dupSel(); return; }
+  if(ctl&&e.key.toLowerCase()==='c'&&sels.length){ e.preventDefault(); copySel(); return; }
+  if(ctl&&e.key.toLowerCase()==='x'&&sels.length){ e.preventDefault(); copySel(); delSel(); return; }
+  if(ctl&&e.key.toLowerCase()==='v'){ e.preventDefault(); pasteClip(e.shiftKey); return; }
+  if(e.key==='Delete'&&sels.length){ e.preventDefault(); delSel(); return; }
+  if(e.altKey&&e.key==='ArrowUp'&&sels.length){ e.preventDefault(); moveSel(-1); return; }
+  if(e.altKey&&e.key==='ArrowDown'&&sels.length){ e.preventDefault(); moveSel(1); return; }
+  const AR={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+  if(AR[e.key]&&sels.length&&!e.altKey){
+    e.preventDefault();
+    const [dx,dy]=AR[e.key];
+    nudgeSel(dx,dy,e.shiftKey?10:1,ctl); /* plain: move 1px · Shift: 10px · Ctrl: resize */
+    return;
+  }
+  if(e.key==='Escape'){ clearSel(); }
+}
+window.addEventListener('keydown',handleKeys);
+
+function tabInTable(e){
+  const cell=editingEl&&editingEl.closest?editingEl.closest('td,th'):null;
+  if(!cell) return;
+  e.preventDefault();
+  const row=cell.parentElement, table=cell.closest('table');
+  let next=e.shiftKey?cell.previousElementSibling:cell.nextElementSibling;
+  if(!next){
+    const rows=[...table.rows], ri=rows.indexOf(row);
+    if(e.shiftKey){ next=rows[ri-1]&&rows[ri-1].cells[rows[ri-1].cells.length-1]; }
+    else{
+      next=rows[ri+1]&&rows[ri+1].cells[0];
+      if(!next){ addRow(table,cell,'below'); next=table.rows[ri+1]&&table.rows[ri+1].cells[0]; snapshot(); }
+    }
+  }
+  if(next){ select(next); startEdit(next); }
+}
+
+/* ═══════════ multi element ops ═══════════ */
+let clip=[], nudgeTimer=null;
+function copySel(){
+  if(!sels.length){ flash(t('tClipEmpty'),'err'); return; }
+  clip=docSort(sels).map(el=>{
+    const c=el.cloneNode(true);
+    [c,...c.querySelectorAll('[data-le-sel],[data-le-primary],[data-le-hover],[contenteditable]')].forEach(n=>{
+      ['data-le-sel','data-le-primary','data-le-hover','contenteditable'].forEach(a=>n.removeAttribute(a));
+    });
+    return {html:c.outerHTML, tag:el.tagName};
+  });
+  flash(tn('tCopied',clip.length),'ok');
+}
+function placePasted(node,tag,target,inside,news){
+  const anchor=news.length?news[news.length-1]:null;
+  if(anchor){ anchor.after(node); news.push(node); return; } /* chain after the previous pasted */
+  if(!target||!doc.contains(target)){ doc.body.appendChild(node); news.push(node); return; }
+  if(tag==='TR'){ /* rows land after the target's row */
+    const tr=target.closest('tr');
+    if(tr){ tr.after(node); news.push(node); return; }
+    const tb=target.closest('table');
+    if(tb){ (tb.tBodies[0]||tb).appendChild(node); news.push(node); return; }
+  }
+  if(tag==='TD'||tag==='TH'){ /* cells land after the target cell */
+    const cell=target.closest('td,th');
+    if(cell){ cell.after(node); news.push(node); return; }
+  }
+  if(inside) target.appendChild(node);
+  else target.after(node);
+  news.push(node);
+}
+function pasteClip(inside){
+  if(!clip.length){ flash(t('tClipEmpty'),'err'); return; }
+  const target=primary();
+  const tpl=doc.createElement('template');
+  const news=[];
+  clip.forEach(item=>{
+    tpl.innerHTML=item.html;
+    const n=tpl.content.firstElementChild;
+    if(n) placePasted(n,item.tag,target,inside,news);
+  });
+  if(!news.length) return;
+  snapshot();
+  sels=news; paintSel(); renderInspector(); renderCrumbs(); updateTableTools();
+  if(news[news.length-1].scrollIntoView) news[news.length-1].scrollIntoView({block:'nearest',behavior:'smooth'});
+  flash(t('tPasted'),'ok');
+}
+/* arrow-key fine adjustment: move (or Ctrl=resize) every selected element */
+function bump(el,prop,delta,cs){
+  const cur=(el.style[prop]||'').trim();
+  const m=/^(-?\d*\.?\d+)(px|%|em|rem|vw|vh)?$/.exec(cur);
+  if(m){
+    const unit=m[2]||'px';
+    const step=unit==='%'?0.5:(unit==='em'||unit==='rem'?0.1:1);
+    el.style[prop]=(Math.round((parseFloat(m[1])+delta*step)*100)/100)+unit;
+  }else{
+    const base=parseFloat(cs[prop]);
+    el.style[prop]=Math.round((isNaN(base)?0:base)+delta)+'px';
+  }
+}
+function nudgeSel(dx,dy,mult,resize){
+  if(!sels.length) return;
+  const w=frame.contentWindow;
+  sels.forEach(el=>{
+    const cs=w?w.getComputedStyle(el):{};
+    if(resize){
+      if(dx) bump(el,'width',dx*mult,cs);
+      if(dy) bump(el,'height',dy*mult,cs);
+    }else{
+      if(cs.position==='static') el.style.position='relative';
+      if(dx) bump(el,'left',dx*mult,cs);
+      if(dy) bump(el,'top',dy*mult,cs);
+    }
+  });
+  setDirty(true); renderInspector();
+  clearTimeout(nudgeTimer);
+  nudgeTimer=setTimeout(snapshot,600); /* batch rapid keypresses into one history step */
+}
+function dupSel(){
+  if(!sels.length) return;
+  const news=[];
+  docSort(sels).forEach(el=>{
+    const c=el.cloneNode(true);
+    c.removeAttribute('data-le-sel'); c.removeAttribute('data-le-primary');
+    el.after(c); news.push(c);
+  });
+  sels=news; snapshot(); paintSel(); renderInspector(); renderCrumbs(); flash(t('tDup'),'ok');
+}
+function delSel(){
+  if(!sels.length) return;
+  sels.forEach(el=>el.remove());
+  snapshot(); clearSel(); flash(t('tDel'),'ok');
+}
+function moveSel(dir){
+  if(!sels.length) return;
+  const list=dir<0?docSort(sels):docSort(sels).reverse();
+  let moved=false;
+  list.forEach(el=>{
+    const sib=dir<0?el.previousElementSibling:el.nextElementSibling;
+    if(sib&&!sels.includes(sib)){ dir<0?sib.before(el):sib.after(el); moved=true; }
+  });
+  if(moved){ snapshot(); renderCrumbs(); } else flash(t('tNoMove'));
+}
+function wrapSel(){
+  if(!sels.length) return;
+  const ordered=docSort(sels);
+  const sameParent=ordered.every(n=>n.parentElement===ordered[0].parentElement);
+  const d=doc.createElement('div');
+  if(sameParent){
+    ordered[0].before(d);
+    ordered.forEach(n=>d.appendChild(n));
+  }else{
+    ordered[0].before(d); d.appendChild(ordered[0]);
+  }
+  snapshot(); select(d);
+}
+function unwrapSel(){
+  if(!sels.length) return;
+  sels.slice().forEach(el=>{
+    if(el.tagName==='BODY') return;
+    const p=el.parentElement;
+    while(el.firstChild) p.insertBefore(el.firstChild,el);
+    el.remove();
+  });
+  snapshot(); clearSel(); flash(t('tUnwrapped'),'ok');
+}
+function changeTag(tag){
+  if(!sels.length||!tag) return;
+  const news=[];
+  sels.forEach(el=>{
+    const n=doc.createElement(tag);
+    [...el.attributes].forEach(a=>{ if(!a.name.startsWith('data-le-')) n.setAttribute(a.name,a.value); });
+    while(el.firstChild) n.appendChild(el.firstChild);
+    el.replaceWith(n); news.push(n);
+  });
+  sels=news; snapshot(); paintSel(); renderInspector(); renderCrumbs(); updateTableTools();
+}
+
+/* ═══════════ table grid engine (colspan/rowspan aware) ═══════════ */
+function gridInfo(table){
+  const grid=[], startRow=new Map(), startCol=new Map();
+  [...table.rows].forEach((tr,r)=>{
+    grid[r]=grid[r]||[];
+    let c=0;
+    [...tr.cells].forEach(cell=>{
+      while(grid[r][c]!==undefined) c++;
+      startRow.set(cell,r); startCol.set(cell,c);
+      for(let dr=0;dr<cell.rowSpan;dr++){
+        const rr=r+dr; grid[rr]=grid[rr]||[];
+        for(let dc=0;dc<cell.colSpan;dc++) grid[rr][c+dc]=cell;
+      }
+      c+=cell.colSpan;
+    });
+  });
+  const width=grid.reduce((m,g)=>Math.max(m,g?g.length:0),0);
+  return {grid,startRow,startCol,width};
+}
+function mkCellLike(ref){
+  const nc=doc.createElement(ref.tagName.toLowerCase());
+  const st=ref.getAttribute('style'); if(st) nc.setAttribute('style',st);
+  if(ref.className) nc.className=ref.className;
+  nc.innerHTML='&nbsp;';
+  return nc;
+}
+function setSpan(cell,attr,v){ if(v>1) cell.setAttribute(attr,v); else cell.removeAttribute(attr); }
+
+function addColumn(table, at){
+  const {grid,startCol}=gridInfo(table);
+  const widened=new Set();
+  for(const cell of startCol.keys()){
+    const s=startCol.get(cell);
+    if(s<at&&s+cell.colSpan>at){ setSpan(cell,'colspan',cell.colSpan+1); widened.add(cell); }
+  }
+  [...table.rows].forEach((tr,r)=>{
+    const cov=grid[r]&&grid[r][at];
+    if(cov&&widened.has(cov)) return;
+    let before=null;
+    for(const c of tr.cells){ if(startCol.get(c)>=at){ before=c; break; } }
+    const ref=(grid[r]&&(grid[r][at]||grid[r][at-1]))||tr.cells[tr.cells.length-1];
+    if(!ref) return;
+    tr.insertBefore(mkCellLike(ref), before);
+  });
+}
+function delColumn(table, at){
+  const {grid}=gridInfo(table);
+  const seen=new Set();
+  for(let r=0;r<grid.length;r++){
+    const cell=grid[r]&&grid[r][at];
+    if(!cell||seen.has(cell)) continue;
+    seen.add(cell);
+    if(cell.colSpan>1) setSpan(cell,'colspan',cell.colSpan-1);
+    else cell.remove();
+  }
+  [...table.rows].forEach(tr=>{ if(!tr.cells.length) tr.remove(); });
+  if(!table.rows.length) table.remove();
+}
+function addRow(table, refCell, where){
+  const refRow=refCell.parentElement;
+  const rT=refRow.rowIndex;
+  const ins=where==='above'?rT:rT+1;
+  const {grid,startRow,startCol,width}=gridInfo(table);
+  const widened=new Set();
+  for(const cell of startRow.keys()){
+    const s=startRow.get(cell);
+    if(s<ins&&s+cell.rowSpan>ins){ setSpan(cell,'rowspan',cell.rowSpan+1); widened.add(cell); }
+  }
+  const tr=doc.createElement('tr');
+  let c=0;
+  while(c<width){
+    const cov=grid[ins]&&grid[ins][c];
+    if(cov&&widened.has(cov)){ c++; continue; }
+    const ref=(grid[rT]&&(grid[rT][c]||grid[rT][c-1]))||refCell;
+    const nc=mkCellLike(ref);
+    let span=1;
+    if(grid[rT]&&grid[rT][c]&&startCol.get(grid[rT][c])===c){
+      span=grid[rT][c].colSpan;
+      for(let k=1;k<span;k++){
+        const pb=grid[ins]&&grid[ins][c+k];
+        if(pb&&widened.has(pb)){ span=k; break; }
+      }
+    }
+    setSpan(nc,'colspan',span);
+    tr.appendChild(nc); c+=span;
+  }
+  const nextTr=table.rows[ins]||null;
+  let section;
+  if(nextTr){ section=nextTr.parentElement; section.insertBefore(tr,nextTr); }
+  else{ section=table.rows[table.rows.length-1].parentElement; section.appendChild(tr); }
+  if(section.tagName==='TBODY'||section.tagName==='TFOOT'){
+    [...tr.cells].forEach(cell=>{
+      if(cell.tagName==='TH'){
+        const td=doc.createElement('td');
+        [...cell.attributes].forEach(a=>td.setAttribute(a.name,a.value));
+        td.innerHTML=cell.innerHTML;
+        cell.replaceWith(td);
+      }
+    });
+  }
+  return tr;
+}
+function delRow(table, row){
+  const rT=row.rowIndex;
+  const {startRow,startCol}=gridInfo(table);
+  for(const cell of startRow.keys()){
+    const s=startRow.get(cell);
+    if(s<rT&&s+cell.rowSpan>rT) setSpan(cell,'rowspan',cell.rowSpan-1);
+  }
+  const nextTr=table.rows[rT+1];
+  [...row.cells].forEach(cell=>{
+    if(cell.rowSpan>1&&nextTr){
+      setSpan(cell,'rowspan',cell.rowSpan-1);
+      const sc=startCol.get(cell);
+      let before=null;
+      for(const c of nextTr.cells){ if(startCol.get(c)>sc){ before=c; break; } }
+      nextTr.insertBefore(cell,before);
+    }
+  });
+  row.remove();
+  if(!table.rows.length) table.remove();
+}
+
+/* remove rows whose cells were all consumed by a merge; shrink spans crossing them */
+function cleanupEmptyRows(table){
+  let changed=true;
+  while(changed){
+    changed=false;
+    const {startRow}=gridInfo(table);
+    for(const tr of [...table.rows]){
+      if(tr.cells.length) continue;
+      const r=tr.rowIndex;
+      for(const cell of startRow.keys()){
+        const s=startRow.get(cell);
+        if(s<r&&s+cell.rowSpan>r) setSpan(cell,'rowspan',cell.rowSpan-1);
+      }
+      tr.remove(); changed=true; break;
+    }
+  }
+}
+
+/* merge: cells must tile a solid rectangle in the grid; returns merged cell or null */
+function mergeCells(table, cells){
+  const {startRow,startCol}=gridInfo(table);
+  let r1=Infinity,c1=Infinity,r2=-1,c2=-1,area=0;
+  for(const cl of cells){
+    const r=startRow.get(cl), c=startCol.get(cl);
+    if(r===undefined||c===undefined) return null;
+    r1=Math.min(r1,r); c1=Math.min(c1,c);
+    r2=Math.max(r2,r+cl.rowSpan-1); c2=Math.max(c2,c+cl.colSpan-1);
+    area+=cl.rowSpan*cl.colSpan;
+  }
+  if(area!==(r2-r1+1)*(c2-c1+1)) return null; /* not a solid rectangle */
+  const target=cells.find(cl=>startRow.get(cl)===r1&&startCol.get(cl)===c1);
+  if(!target) return null;
+  const frags=[];
+  for(const cl of cells){
+    if(cl===target) continue;
+    if(cl.textContent.trim()!=='') frags.push(cl.innerHTML);
+    cl.remove();
+  }
+  setSpan(target,'colspan',c2-c1+1);
+  setSpan(target,'rowspan',r2-r1+1);
+  if(frags.length){
+    const own=target.textContent.trim()===''?'':target.innerHTML+' ';
+    target.innerHTML=own+frags.join(' ');
+  }
+  cleanupEmptyRows(table);
+  return target;
+}
+
+/* split a merged cell back into 1x1 cells (keeps content in the top-left cell) */
+function splitCell(table, cell){
+  if(cell.rowSpan===1&&cell.colSpan===1) return false;
+  const {startRow,startCol}=gridInfo(table);
+  const r0=startRow.get(cell), c0=startCol.get(cell);
+  const rs=cell.rowSpan, cs=cell.colSpan;
+  setSpan(cell,'rowspan',1); setSpan(cell,'colspan',1);
+  for(let r=r0;r<r0+rs;r++){
+    const tr=table.rows[r]; if(!tr) continue;
+    let anchor=null;
+    for(const oc of tr.cells){
+      const v=startCol.get(oc);
+      if(v!==undefined&&v>c0){ anchor=oc; break; }
+    }
+    for(let c=c0;c<c0+cs;c++){
+      if(r===r0&&c===c0) continue;
+      tr.insertBefore(mkCellLike(cell), anchor);
+    }
+  }
+  return true;
+}
+
+function cellCtx(){
+  const p=primary(); if(!p||!p.closest) return null;
+  let c=p.closest('td,th');
+  if(!c){ const tb=p.closest('table'); if(tb&&tb.rows.length) c=tb.rows[0].cells[0]; }
+  return c;
+}
+function doMerge(){
+  const cells=[...new Set(sels.map(s=>s.closest?s.closest('td,th'):null).filter(Boolean))];
+  if(cells.length<2){ flash(t('tMergeNeed'),'err'); return; }
+  const table=cells[0].closest('table');
+  if(cells.some(cl=>cl.closest('table')!==table)){ flash(t('tMergeNeed'),'err'); return; }
+  const merged=mergeCells(table,cells);
+  if(!merged){ flash(t('tMergeNeed'),'err'); return; }
+  snapshot(); select(merged); flash(t('tMerged'),'ok');
+}
+function doSplit(){
+  const c=cellCtx();
+  if(!c){ flash(t('tCellFirst'),'err'); return; }
+  if(c.rowSpan===1&&c.colSpan===1){ flash(t('tSplitNeed'),'err'); return; }
+  splitCell(c.closest('table'),c);
+  snapshot(); select(c); flash(t('tSplitDone'),'ok');
+}
+function tblOp(op){
+  if(op==='merge') return doMerge();
+  if(op==='split') return doSplit();
+  const c=cellCtx();
+  if(!c){ flash(t('tCellFirst'),'err'); return; }
+  const table=c.closest('table');
+  const {startCol}=gridInfo(table);
+  const sc=startCol.get(c)||0;
+  if(op==='rowAbove'||op==='rowBelow'){
+    const tr=addRow(table,c,op==='rowAbove'?'above':'below');
+    snapshot(); select(tr.cells[Math.min(c.cellIndex,tr.cells.length-1)]||tr.cells[0]);
+    flash(t('tRowAdded'),'ok'); return;
+  }
+  if(op==='rowDel'){ delRow(table,c.parentElement); snapshot(); reSelect(); flash(t('tRowDeleted'),'ok'); return; }
+  if(op==='colLeft'||op==='colRight'){
+    addColumn(table, op==='colLeft'?sc:sc+c.colSpan);
+    snapshot(); reSelect(); flash(t('tColAdded'),'ok'); return;
+  }
+  if(op==='colDel'){ delColumn(table,sc); snapshot(); reSelect(); flash(t('tColDeleted'),'ok'); return; }
+  if(op==='tableDel'){ table.remove(); snapshot(); clearSel(); flash(t('tTableDeleted'),'ok'); }
+}
+function updateTableTools(){
+  const p=primary();
+  $('#tableTools').classList.toggle('on', !!(p&&p.closest&&p.closest('table')));
+}
+$$('#tableTools [data-tbl]').forEach(b=>b.addEventListener('click',()=>tblOp(b.dataset.tbl)));
+
+/* ═══════════ insert ═══════════ */
+function elT(tag,text){ const n=doc.createElement(tag); n.textContent=text; return n; }
+function listT(tag){ const l=doc.createElement(tag);
+  for(let i=1;i<=3;i++){ const li=doc.createElement('li'); li.textContent='Item '+i; l.appendChild(li); } return l; }
+const INSERTS={
+  h2:()=>elT('h2','Heading'), p:()=>elT('p','Lorem ipsum — double-click to edit.'),
+  blockquote:()=>elT('blockquote','Quote'), pre:()=>elT('pre','code here'),
+  hr:()=>doc.createElement('hr'), button:()=>elT('button','Button'),
+  div:()=>{ const d=elT('div','Container'); d.style.padding='16px'; d.style.border='1px dashed #aaa'; return d; },
+  ul:()=>listT('ul'), ol:()=>listT('ol'),
+  img:()=>{ const s=prompt(t('pImgUrl'),'https://'); if(!s) return null;
+    const i=doc.createElement('img'); i.src=s; i.alt=prompt(t('pAlt'),'')||''; i.style.maxWidth='100%'; return i; },
+  a:()=>{ const h=prompt(t('pHref'),'https://'); if(!h) return null;
+    const a=elT('a',prompt(t('pText'),t('linkDefault'))||t('linkDefault')); a.href=h; return a; },
+  table:()=>{
+    const tb=doc.createElement('table');
+    tb.style.borderCollapse='collapse'; tb.style.width='100%';
+    const body=doc.createElement('tbody'); tb.appendChild(body);
+    for(let r=0;r<3;r++){
+      const tr=doc.createElement('tr');
+      for(let c=0;c<3;c++){
+        const cell=doc.createElement(r===0?'th':'td');
+        cell.textContent=r===0?('Col '+(c+1)):'\u00a0';
+        cell.style.cssText='border:1px solid #999;padding:8px 12px;text-align:left';
+        if(r===0) cell.style.background='#f3f0fc';
+        tr.appendChild(cell);
+      }
+      body.appendChild(tr);
+    }
+    return tb;
+  }
+};
+function insertKind(kind){
+  const f=INSERTS[kind]; if(!f) return;
+  const n=f(); if(!n) return;
+  const p=primary();
+  if(p&&p!==doc.body&&doc.contains(p)) p.after(n);
+  else doc.body.appendChild(n);
+  snapshot(); select(n);
+  if(n.scrollIntoView) n.scrollIntoView({block:'nearest',behavior:'smooth'});
+  flash(t('tInserted'),'ok');
+}
+
+/* ═══════════ format (applies to all selected) ═══════════ */
+$$('#toolbar [data-fmt]').forEach(b=>b.addEventListener('mousedown',e=>{
+  e.preventDefault();
+  const cmd=b.dataset.fmt;
+  if(editingEl){ doc.execCommand(cmd); setDirty(true); return; }
+  if(!sels.length){ flash(t('tSelFirst')); return; }
+  sels.forEach(el=>{
+    const s=el.style;
+    if(cmd==='bold') s.fontWeight=(s.fontWeight==='700'||s.fontWeight==='bold')?'':'700';
+    else if(cmd==='italic') s.fontStyle=s.fontStyle==='italic'?'':'italic';
+    else if(cmd==='underline') s.textDecoration=s.textDecoration.includes('underline')?'':'underline';
+    else if(cmd==='strikeThrough') s.textDecoration=s.textDecoration.includes('line-through')?'':'line-through';
+    else if(cmd==='removeFormat'){['fontWeight','fontStyle','textDecoration','color','backgroundColor','fontSize'].forEach(k=>s[k]='');}
+    if(!el.getAttribute('style')) el.removeAttribute('style');
+  });
+  snapshot(); renderInspector();
+}));
+$('#tagSelect').addEventListener('change',e=>{ changeTag(e.target.value); e.target.value=''; });
+
+/* ═══════════ inspector (computed values, multi apply) ═══════════ */
+function rgb2hex(s){
+  if(!s) return '';
+  const m=s.match(/[\d.]+/g); if(!m) return '';
+  const a=m.length>3?parseFloat(m[3]):1;
+  if(a===0) return '';
+  return '#'+m.slice(0,3).map(x=>Math.round(+x).toString(16).padStart(2,'0')).join('');
+}
+function renderInspector(){
+  const p=primary(), has=!!p;
+  $('#noSel').style.display=has?'none':'block';
+  $('#insPanel').style.display=has?'block':'none';
+  if(!has) return;
+  $('#selTag').textContent='<'+p.tagName.toLowerCase()+'>';
+  const badge=$('#multiBadge');
+  if(sels.length>1){ badge.style.display='inline-block'; badge.textContent=tn('multiN',sels.length-1); }
+  else badge.style.display='none';
+  $('#selMeta').textContent=(p.id?'#'+p.id+' ':'')+
+    (typeof p.className==='string'?[...p.classList].filter(c=>c).map(c=>'.'+c).join(''):'');
+  const cs=frame.contentWindow.getComputedStyle(p), s=p.style;
+  $('#stFont').value=Math.round(parseFloat(cs.fontSize))||'';
+  const cHex=rgb2hex(cs.color)||'#000000';
+  $('#stColor').value=cHex; $('#stColorT').value=s.color||cHex;
+  const bHex=rgb2hex(cs.backgroundColor);
+  $('#stBg').value=bHex||'#ffffff'; $('#stBgT').value=s.backgroundColor||bHex;
+  let al=cs.textAlign; if(al==='start') al='left'; if(al==='end') al='right';
+  $$('.alignBtns button').forEach(b=>b.classList.toggle('on',al===b.dataset.al));
+  $('#stPad').value=s.padding||''; $('#stPad').placeholder=cs.padding;
+  $('#stMar').value=s.margin||''; $('#stMar').placeholder=cs.margin;
+  $('#stW').value=s.width||''; $('#stW').placeholder=Math.round(parseFloat(cs.width))+'px';
+  renderAttrs();
+}
+function applyStyle(prop,val){
+  if(!sels.length) return;
+  sels.forEach(el=>{
+    el.style[prop]=val;
+    if(!el.getAttribute('style')) el.removeAttribute('style');
+  });
+  snapshot();
+}
+$('#stFont').addEventListener('input',e=>{
+  const v=parseFloat(e.target.value);
+  if(!isNaN(v)&&v>0) applyStyle('fontSize',v+'px');
+});
+[['stColorT','color'],['stBgT','backgroundColor'],['stPad','padding'],['stMar','margin'],['stW','width']]
+.forEach(([id,prop])=>$('#'+id).addEventListener('change',e=>{applyStyle(prop,e.target.value.trim());renderInspector();}));
+$('#stColor').addEventListener('input',e=>{ $('#stColorT').value=e.target.value; applyStyle('color',e.target.value); });
+$('#stBg').addEventListener('input',e=>{ $('#stBgT').value=e.target.value; applyStyle('backgroundColor',e.target.value); });
+$$('.alignBtns button').forEach(b=>b.addEventListener('click',()=>{
+  const p=primary(); if(!p) return;
+  applyStyle('textAlign', p.style.textAlign===b.dataset.al?'':b.dataset.al);
+  renderInspector();
+}));
+$('#opCopy').onclick=copySel; $('#opPaste').onclick=()=>pasteClip(false);
+$('#opDup').onclick=dupSel; $('#opDel').onclick=delSel;
+$('#opUp').onclick=()=>moveSel(-1); $('#opDown').onclick=()=>moveSel(1);
+$('#opWrap').onclick=wrapSel; $('#opUnwrap').onclick=unwrapSel;
+
+function renderAttrs(){
+  const list=$('#attrList'); list.innerHTML='';
+  const p=primary(); if(!p) return;
+  [...p.attributes].forEach(a=>{
+    if(a.name.startsWith('data-le-')||a.name==='contenteditable') return;
+    list.appendChild(attrRow(a.name,a.value));
+  });
+}
+function attrRow(k,v){
+  const r=document.createElement('div'); r.className='attrRow';
+  const ki=document.createElement('input'); ki.className='k'; ki.value=k; ki.placeholder=t('attrName');
+  const vi=document.createElement('input'); vi.value=v; vi.placeholder=t('attrVal');
+  const x=document.createElement('button'); x.textContent='✕';
+  const commit=()=>{
+    const p=primary(); if(!p) return;
+    const nk=ki.value.trim();
+    if(k&&nk!==k) p.removeAttribute(k);
+    if(nk){ try{ p.setAttribute(nk,vi.value); k=nk; }catch(err){ flash(t('tBadAttr'),'err'); return; } }
+    snapshot();
+    $('#selMeta').textContent=(p.id?'#'+p.id+' ':'')+[...p.classList].filter(c=>c).map(c=>'.'+c).join('');
+  };
+  ki.addEventListener('change',commit); vi.addEventListener('change',commit);
+  x.addEventListener('click',()=>{ const p=primary(); if(k&&p){ p.removeAttribute(k); snapshot(); } r.remove(); });
+  r.append(ki,vi,x); return r;
+}
+$('#attrAdd').onclick=()=>{ if(primary()) $('#attrList').appendChild(attrRow('','')); };
+
+/* ═══════════ breadcrumbs ═══════════ */
+function renderCrumbs(){
+  const c=$('#crumbs'); c.innerHTML='';
+  const p=primary();
+  if(!p){ c.innerHTML='<button class="last" disabled>body</button>'; return; }
+  const chain=[]; let n=p;
+  while(n&&n!==doc.documentElement){ chain.unshift(n); n=n.parentElement; }
+  chain.forEach((node,i)=>{
+    if(i){ const s=document.createElement('span'); s.className='sepc'; s.textContent='›'; c.appendChild(s); }
+    const b=document.createElement('button');
+    b.textContent=node.tagName.toLowerCase()+(node.id?'#'+node.id:'');
+    if(i===chain.length-1) b.classList.add('last');
+    b.onclick=()=>select(node===doc.body?null:node);
+    c.appendChild(b);
+  });
+}
+
+/* ═══════════ source view ═══════════ */
+function refreshSrc(force){
+  if(!doc) return;
+  if(!force&&document.activeElement===srcText) return;
+  if(force||document.body.classList.contains('view-source')||document.body.classList.contains('view-split'))
+    srcText.value=buildHTML();
+}
+$('#srcApply').onclick=()=>swapDoc(srcText.value,'apply');
+$$('.viewSwitch button').forEach(b=>b.addEventListener('click',()=>{
+  $$('.viewSwitch button').forEach(x=>x.classList.toggle('on',x===b));
+  document.body.classList.remove('view-visual','view-split','view-source');
+  document.body.classList.add('view-'+b.dataset.view);
+  if(b.dataset.view!=='visual') refreshSrc(true);
+}));
+
+/* ═══════════ find / replace ═══════════ */
+function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function openFind(){ findDlg.showModal(); $('#frFind').focus(); $('#frCount').textContent=''; }
+$('#findBtn').onclick=openFind;
+$('#frClose').onclick=()=>findDlg.close();
+$('#frCountBtn').onclick=()=>{
+  const f=$('#frFind').value; if(!f) return;
+  const m=buildHTML().match(new RegExp(escRe(f),'g'));
+  $('#frCount').textContent=tn('frMatches',m?m.length:0);
+};
+$('#frAllBtn').onclick=()=>{
+  const f=$('#frFind').value; if(!f) return;
+  const html=buildHTML();
+  const m=html.match(new RegExp(escRe(f),'g'));
+  if(!m){ $('#frCount').textContent=t('frNone'); return; }
+  swapDoc(html.split(f).join($('#frRepl').value),'apply');
+  $('#frCount').textContent=tn('frDone',m.length);
+  flash(tn('frDone',m.length),'ok');
+};
+
+/* ═══════════ file I/O (with graceful fallbacks) ═══════════ */
+function confirmDiscard(){ return !dirty||confirm(t('confirmDiscard')); }
+async function openFile(){
+  if(!confirmDiscard()) return;
+  if(fsOK){
+    try{
+      const [h]=await showOpenFilePicker({types:[{description:'HTML',accept:{'text/html':['.html','.htm']}}]});
+      fileHandle=h; const f=await h.getFile(); fname=f.name;
+      setSrcdoc(await f.text(),'fresh'); updateTitle(); flash(t('tOpened')+': '+fname,'ok');
+      return;
+    }catch(e){
+      if(e.name==='AbortError') return;
+      /* SecurityError etc. → fall through to the classic file input */
+    }
+  }
+  $('#fileInput').click();
+}
+$('#fileInput').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  fileHandle=null; fname=f.name;
+  setSrcdoc(await f.text(),'fresh'); updateTitle(); e.target.value='';
+  flash(t('tFallbackOpen'),'ok');
+});
+async function save(){
+  if(fsOK&&fileHandle){
+    try{
+      const w=await fileHandle.createWritable();
+      await w.write(buildHTML()); await w.close();
+      setDirty(false); flash(t('tSaved')+': '+fname,'ok');
+      return;
+    }catch(e){
+      if(e.name==='AbortError') return;
+      /* permission lost etc. → fall through to Save As */
+    }
+  }
+  saveAs();
+}
+async function saveAs(){
+  const html=buildHTML();
+  if(fsOK){
+    try{
+      const h=await showSaveFilePicker({suggestedName:fname,types:[{description:'HTML',accept:{'text/html':['.html']}}]});
+      fileHandle=h; fname=h.name;
+      const w=await h.createWritable(); await w.write(html); await w.close();
+      setDirty(false); updateTitle(); flash(t('tSaved')+': '+fname,'ok');
+      return;
+    }catch(e){
+      if(e.name==='AbortError') return;
+      /* picker unavailable → fall through to download */
+    }
+  }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=fname; a.click(); URL.revokeObjectURL(a.href);
+  setDirty(false); flash(t('tDl'),'ok');
+}
+function newDoc(){
+  if(!confirmDiscard()) return;
+  fileHandle=null; fname='untitled.html';
+  setSrcdoc(TEMPLATE(),'fresh'); updateTitle();
+}
+$('#openBtn').onclick=openFile; $('#saveBtn').onclick=save;
+$('#saveAsBtn').onclick=saveAs; $('#newBtn').onclick=newDoc;
+$('#undoBtn').onclick=undo; $('#redoBtn').onclick=redo;
+$('#helpBtn').onclick=()=>helpDlg.showModal();
+window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+
+/* drag & drop: .html opens the file, image files get embedded as Base64 */
+async function handleDrop(e){
+  const dt=e.dataTransfer; if(!dt||!dt.files||!dt.files.length) return;
+  const files=[...dt.files];
+  const htmlIdx=files.findIndex(f=>/\.html?$/i.test(f.name));
+  const imgs=files.filter(f=>/^image\//.test(f.type));
+  if(htmlIdx>=0){
+    e.preventDefault();
+    const file=files[htmlIdx];
+    /* must grab the handle synchronously, before any await */
+    let handleP=null;
+    const item=dt.items&&dt.items[htmlIdx];
+    if(item&&item.getAsFileSystemHandle){ try{ handleP=item.getAsFileSystemHandle(); }catch(_){} }
+    if(!confirmDiscard()) return;
+    fileHandle=null;
+    if(handleP){ try{ const h=await handleP; if(h&&h.kind==='file') fileHandle=h; }catch(_){} }
+    fname=file.name;
+    setSrcdoc(await file.text(),'fresh'); updateTitle();
+    flash(t('tOpened')+': '+fname,'ok');
+    return;
+  }
+  if(imgs.length){ e.preventDefault(); await embedImages(imgs,e); }
+}
+async function embedImages(files,e){
+  if(!doc) return;
+  const total=files.reduce((s,f)=>s+f.size,0);
+  if(total>2*1024*1024 && !confirm(tn('confirmBigImg',(total/1048576).toFixed(1)))) return;
+  /* drop anchor: element under the cursor when dropped on the canvas, else current selection */
+  let anchor=null;
+  if(e.view===frame.contentWindow){
+    anchor=pick(doc.elementFromPoint(e.clientX,e.clientY));
+    if(anchor===doc.body) anchor=null;
+  }else if(primary()&&doc.contains(primary())) anchor=primary();
+  let last=null;
+  for(const f of files){
+    const url=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result); r.onerror=()=>rej(r.error);
+      r.readAsDataURL(f);
+    });
+    const img=doc.createElement('img');
+    img.src=url;
+    img.alt=f.name.replace(/\.[^.]+$/,'');
+    img.style.maxWidth='100%';
+    if(anchor) anchor.after(img); else doc.body.appendChild(img);
+    anchor=img; last=img;
+  }
+  snapshot();
+  if(last){ select(last); if(last.scrollIntoView) last.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+  flash(tn('tImgAdded',files.length),'ok');
+}
+function bindDrop(target){
+  target.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+  target.addEventListener('drop',handleDrop);
+}
+bindDrop(document);
+
+/* ═══════════ preview ═══════════ */
+$('#modeBtn').onclick=()=>{
+  preview=!preview;
+  $('#modeBtn').classList.toggle('preview-on',preview);
+  $('#modeBtn').textContent=preview?t('previewOn'):t('preview');
+  if(doc) doc.documentElement.toggleAttribute('data-le-edit',!preview);
+  clearSel(); clearHover();
+  flash(preview?t('tPrevOn'):t('tPrevOff'),'ok');
+};
+
+/* ═══════════ bake: run scripts once, freeze the result ═══════════ */
+function isExecutableScript(s){
+  const ty=(s.getAttribute('type')||'').trim().toLowerCase();
+  return ty===''||ty==='text/javascript'||ty==='application/javascript'||ty==='module';
+}
+function hasExecutableScripts(d){
+  return [...d.querySelectorAll('script')].some(isExecutableScript);
+}
+/* turn a rendered live document into clean static HTML */
+function serializeBaked(bd){
+  const root=bd.documentElement.cloneNode(true);
+  /* canvas → embedded PNG (read pixels from the LIVE canvas, swap in the clone) */
+  const liveCv=[...bd.querySelectorAll('canvas')];
+  const cloneCv=[...root.querySelectorAll('canvas')];
+  cloneCv.forEach((cc,i)=>{
+    try{
+      const lv=liveCv[i]; if(!lv) return;
+      const url=lv.toDataURL('image/png');
+      const img=bd.createElement('img');
+      img.src=url; img.width=lv.width; img.height=lv.height;
+      const st=cc.getAttribute('style'); if(st) img.setAttribute('style',st);
+      if(cc.className) img.className=cc.className;
+      cc.replaceWith(img);
+    }catch(_){/* tainted canvas → keep as-is */}
+  });
+  root.querySelectorAll('script').forEach(n=>{ if(isExecutableScript(n)) n.remove(); });
+  root.querySelectorAll('noscript').forEach(n=>n.remove());
+  root.querySelectorAll('*').forEach(n=>{
+    [...n.attributes].forEach(a=>{ if(/^on/i.test(a.name)) n.removeAttribute(a.name); });
+  });
+  return '<!DOCTYPE html>\n'+root.outerHTML;
+}
+/* execute html in a hidden sandbox, wait for rendering to settle, capture the DOM */
+function runAndCapture(html){
+  return new Promise((resolve,reject)=>{
+    const fr=document.createElement('iframe');
+    fr.setAttribute('sandbox','allow-scripts allow-same-origin');
+    fr.style.cssText='position:fixed;left:-12000px;top:0;width:1200px;height:900px;visibility:hidden';
+    const cleanup=()=>fr.remove();
+    const timer=setTimeout(()=>{ cleanup(); reject(new Error('timeout')); },10000);
+    fr.addEventListener('load',()=>{
+      const w=fr.contentWindow;
+      const settle=()=>setTimeout(()=>{
+        try{
+          const out=serializeBaked(fr.contentDocument);
+          clearTimeout(timer); cleanup(); resolve(out);
+        }catch(err){ clearTimeout(timer); cleanup(); reject(err); }
+      },900); /* let charts/animations finish drawing */
+      if(w&&w.requestAnimationFrame) w.requestAnimationFrame(()=>w.requestAnimationFrame(settle));
+      else settle();
+    });
+    document.body.appendChild(fr);
+    fr.srcdoc=html;
+  });
+}
+let baking=false;
+const SRC_TYPE='application/x-htmlstudio-source';
+/* embed the dynamic source into the baked output (JSON-escaped, inert) */
+function withSourceBlock(bakedHtml,dynHtml){
+  const clean=bakedHtml.replace(/<script type="application\/x-htmlstudio-source">[\s\S]*?<\/script>\s*/gi,'');
+  const payload=JSON.stringify(dynHtml).replace(/<\//g,'<\\/');
+  return clean.replace(/<\/body>/i,
+    '<script type="'+SRC_TYPE+'">\n'+payload+'\n</'+'script>\n</body>');
+}
+function readSourceBlock(d){
+  const s=[...d.querySelectorAll('script[type]')]
+    .find(x=>(x.getAttribute('type')||'').trim().toLowerCase()===SRC_TYPE);
+  if(!s) return null;
+  try{ return JSON.parse(s.textContent.trim()); }catch(_){ return null; }
+}
+async function bake(){
+  if(baking||!doc) return;
+  if(!hasExecutableScripts(doc)){ flash(t('tNoScripts')); return; }
+  baking=true; $('#bakeBtn').disabled=true; flash(t('tBaking'));
+  try{
+    lastDynamicHTML=buildHTML(); /* remember the dynamic source for data-panel re-rendering */
+    const baked=await runAndCapture(lastDynamicHTML);
+    swapDoc(withSourceBlock(baked,lastDynamicHTML),'apply'); /* Ctrl+Z reverts to the dynamic version */
+    flash(t('tBaked'),'ok');
+  }catch(err){ flash(t('tBakeFail')+': '+err.message,'err'); }
+  baking=false; $('#bakeBtn').disabled=false;
+}
+$('#bakeBtn').onclick=bake;
+$('#bakeNow').onclick=()=>{ bakeDlg.close(); bake(); };
+$('#bakeSkip').onclick=()=>bakeDlg.close();
+
+/* ═══════════ data panel: nested drill-down editor for application/json blocks ═══════════ */
+let dpOpen=false, dpBlockIdx=0, dpData=null, dpPath=[], dpSelRow=-1, dpRaw=false, dpRawScope=null;
+let lastDynamicHTML=null;
+const deepClone=x=>x===undefined?x:JSON.parse(JSON.stringify(x));
+const isContainer=v=>v!==null&&typeof v==='object';
+function dataBlocks(){
+  if(!doc) return [];
+  return [...doc.querySelectorAll('script[type]')]
+    .filter(s=>(s.getAttribute('type')||'').trim().toLowerCase()==='application/json');
+}
+function updateDataBtn(){
+  const n=dataBlocks().length;
+  $('#dataBtn').style.display=n?'':'none';
+  if(!n&&dpOpen) closeDataPanel();
+}
+function openDataPanel(){
+  dpOpen=true; dpPath=[]; dpRaw=false; dpSelRow=-1;
+  document.body.classList.add('dp-open');
+  renderDataPanel(true);
+}
+function closeDataPanel(){ dpOpen=false; document.body.classList.remove('dp-open'); }
+
+function shapeOf(d){
+  if(Array.isArray(d)){
+    if(!d.length) return 'objects';
+    if(d.every(x=>x&&typeof x==='object'&&!Array.isArray(x))) return 'objects';
+    if(d.every(x=>Array.isArray(x))) return 'arrays';
+    if(d.every(x=>typeof x!=='object'||x===null)) return 'prims';
+    return 'raw';
+  }
+  if(d&&typeof d==='object') return 'kv';
+  return 'raw';
+}
+const cellToText=v=>v===undefined?'':(typeof v==='string'?v:JSON.stringify(v));
+const textToVal=s=>{ if(s==='')return ''; try{ return JSON.parse(s); }catch(_){ return s; } };
+function nodeAt(path){
+  let n=dpData;
+  for(const k of path){ if(!isContainer(n)) return undefined; n=n[k]; }
+  return n;
+}
+function setNodeAt(path,val){
+  if(!path.length){ dpData=val; return; }
+  const p=nodeAt(path.slice(0,-1));
+  if(isContainer(p)) p[path[path.length-1]]=val;
+}
+function renameKey(obj,oldK,newK){
+  const o={};
+  Object.keys(obj).forEach(k=>{ o[k===oldK?newK:k]=obj[k]; });
+  return o;
+}
+function drillLabel(v){
+  return Array.isArray(v)?('['+v.length+'] ▸'):('{'+Object.keys(v).length+'} ▸');
+}
+
+function renderDataPanel(reload){
+  const blocks=dataBlocks();
+  if(!blocks.length){ closeDataPanel(); return; }
+  if(dpBlockIdx>=blocks.length) dpBlockIdx=0;
+  const sel=$('#dpBlockSel'); sel.innerHTML='';
+  blocks.forEach((b,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=(b.id?'#'+b.id:'json['+(i+1)+']');
+    sel.appendChild(o);
+  });
+  sel.value=dpBlockIdx;
+  let err=null;
+  try{ dpData=JSON.parse(blocks[dpBlockIdx].textContent); }
+  catch(e){ err=e.message; }
+  if(err){
+    dpData=null; dpRaw=true; dpPath=[];
+    $('#dpRawText').value=blocks[dpBlockIdx].textContent.trim();
+    flash(tn('tDataBad',err),'err');
+    renderDpView(); return;
+  }
+  if(reload){ dpPath=[]; dpRaw=false; }
+  if(nodeAt(dpPath)===undefined) dpPath=[];
+  renderDpView();
+}
+function renderDpCrumbs(){
+  const c=$('#dpCrumbs'); c.innerHTML='';
+  const mk=(label,i)=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>{ dpCommitRawIfAny(); dpPath=dpPath.slice(0,i); dpSelRow=-1; dpRaw=false; renderDpView(); };
+    if(i===dpPath.length&&!dpRaw) b.classList.add('last');
+    c.appendChild(b);
+  };
+  mk('data',0);
+  dpPath.forEach((k,idx)=>{
+    const s=document.createElement('span'); s.textContent='›'; s.className='sepc'; c.appendChild(s);
+    mk(typeof k==='number'?String(k+1):k, idx+1);
+  });
+}
+/* commit textarea edits silently before navigating away from a raw view */
+function dpCommitRawIfAny(){
+  if(!dpRawScope) return;
+  try{
+    const parsed=JSON.parse($('#dpRawText').value);
+    if(dpRawScope==='root') dpData=parsed; else setNodeAt(dpPath,parsed);
+  }catch(_){/* invalid mid-edit JSON → discard navigation commit */}
+}
+function renderDpView(){
+  renderDpCrumbs();
+  dpSelRow=-1;
+  const node=dpRaw?dpData:nodeAt(dpPath);
+  const shape=dpRaw?'raw':shapeOf(node);
+  const raw=dpRaw||shape==='raw';
+  dpRawScope=raw?(dpRaw?'root':'node'):null;
+  if(raw){
+    $('#dpRawText').value=dpData===null&&dpRaw?$('#dpRawText').value
+      :JSON.stringify(dpRaw?dpData:node,null,2);
+  }
+  $('#dpTable').style.display=raw?'none':'';
+  $('#dpRawText').style.display=raw?'block':'none';
+  $('#dpAddRow').disabled=raw;
+  $('#dpDelRow').disabled=raw;
+  $('#dpAddCol').disabled=raw||!(shape==='objects'||shape==='arrays');
+  if(!raw) renderDpTable(node,shape);
+}
+function dpMarkRow(tbody,ri){
+  dpSelRow=ri;
+  [...tbody.children].forEach((x,i)=>x.classList.toggle('selR',i===ri));
+}
+function dpCell(td,v,onChange,onDrill){
+  if(isContainer(v)){
+    const b=document.createElement('button');
+    b.className='dpDrill'; b.textContent=drillLabel(v); b.title=t('dpDrillT');
+    b.addEventListener('click',onDrill);
+    td.appendChild(b);
+  }else{
+    const inp=document.createElement('input');
+    inp.value=cellToText(v);
+    inp.addEventListener('change',()=>onChange(inp.value));
+    td.appendChild(inp);
+    return inp;
+  }
+}
+function renderDpTable(node,shape){
+  const tb=$('#dpTable'); tb.innerHTML='';
+  let cols;
+  if(shape==='objects'){
+    cols=[]; node.forEach(o=>Object.keys(o).forEach(k=>{ if(!cols.includes(k)) cols.push(k); }));
+  }else if(shape==='arrays'){
+    const w=node.reduce((m,a)=>Math.max(m,a.length),0);
+    cols=Array.from({length:w},(_,i)=>String(i+1));
+  }else if(shape==='prims') cols=['value'];
+  else cols=['key','value']; /* kv */
+
+  const thead=document.createElement('thead'), hr=document.createElement('tr');
+  const corner=document.createElement('th'); corner.className='rn'; corner.textContent='#';
+  hr.appendChild(corner);
+  cols.forEach((c,ci)=>{
+    const th=document.createElement('th');
+    const wrap=document.createElement('div'); wrap.className='hwrap';
+    const inp=document.createElement('input'); inp.value=c;
+    inp.disabled=(shape!=='objects');
+    if(shape==='objects') inp.addEventListener('change',()=>{
+      const nk=inp.value.trim(); if(!nk||nk===c) return;
+      node.forEach((it,i)=>{ if(c in it) node[i]=renameKey(it,c,nk); });
+      renderDpView();
+    });
+    wrap.appendChild(inp);
+    if(shape==='objects'||shape==='arrays'){
+      const x=document.createElement('button'); x.textContent='✕'; x.title=t('tColDel');
+      x.addEventListener('click',()=>{
+        if(shape==='objects') node.forEach(it=>{ delete it[c]; });
+        else node.forEach(r=>r.splice(ci,1));
+        renderDpView();
+      });
+      wrap.appendChild(x);
+    }
+    th.appendChild(wrap); hr.appendChild(th);
+  });
+  thead.appendChild(hr); tb.appendChild(thead);
+
+  const tbody=document.createElement('tbody');
+  const entries=shape==='kv'?Object.keys(node):node;
+  entries.forEach((item,ri)=>{
+    const tr=document.createElement('tr');
+    const rn=document.createElement('td'); rn.className='rn'; rn.textContent=ri+1;
+    rn.addEventListener('click',()=>dpMarkRow(tbody,ri));
+    tr.appendChild(rn);
+    const focusRow=inp=>{ if(inp) inp.addEventListener('focus',()=>dpMarkRow(tbody,ri)); };
+    if(shape==='objects'){
+      cols.forEach(k=>{
+        const td=document.createElement('td');
+        focusRow(dpCell(td,item[k],
+          s=>{ if(s==='') delete item[k]; else item[k]=textToVal(s); },
+          ()=>{ dpPath=[...dpPath,ri,k]; renderDpView(); }));
+        tr.appendChild(td);
+      });
+    }else if(shape==='arrays'){
+      cols.forEach((c,ci)=>{
+        const td=document.createElement('td');
+        focusRow(dpCell(td,item[ci],
+          s=>{ item[ci]=s===''?'':textToVal(s); },
+          ()=>{ dpPath=[...dpPath,ri,ci]; renderDpView(); }));
+        tr.appendChild(td);
+      });
+    }else if(shape==='prims'){
+      const td=document.createElement('td');
+      focusRow(dpCell(td,item,
+        s=>{ node[ri]=s===''?'':textToVal(s); },
+        ()=>{}));
+      tr.appendChild(td);
+    }else{ /* kv: item = key */
+      const k=item;
+      const kt=document.createElement('td');
+      const ki=document.createElement('input'); ki.value=k;
+      ki.addEventListener('change',()=>{
+        const nk=ki.value.trim(); if(!nk||nk===k) return;
+        setNodeAt(dpPath,renameKey(node,k,nk)); renderDpView();
+      });
+      focusRow(ki); kt.appendChild(ki); tr.appendChild(kt);
+      const vt=document.createElement('td');
+      focusRow(dpCell(vt,node[k],
+        s=>{ node[k]=textToVal(s); },
+        ()=>{ dpPath=[...dpPath,k]; renderDpView(); }));
+      tr.appendChild(vt);
+    }
+    tbody.appendChild(tr);
+  });
+  tb.appendChild(tbody);
+}
+$('#dpAddRow').onclick=()=>{
+  const node=nodeAt(dpPath), shape=shapeOf(node);
+  if(shape==='kv'){
+    const k=(prompt(t('dpNewKey'),'')||'').trim(); if(!k) return;
+    if(k in node){ flash(t('tColExists'),'err'); return; }
+    node[k]=''; renderDpView(); return;
+  }
+  if(!Array.isArray(node)) return;
+  const src=node[dpSelRow>=0?dpSelRow:node.length-1];
+  const blank=src!==undefined?deepClone(src):(shape==='objects'?{}:shape==='arrays'?[]:'');
+  node.splice(dpSelRow>=0?dpSelRow+1:node.length,0,blank);
+  renderDpView();
+};
+$('#dpDelRow').onclick=()=>{
+  const node=nodeAt(dpPath), shape=shapeOf(node);
+  if(dpSelRow<0){ flash(t('tRowSel'),'err'); return; }
+  if(shape==='kv'){
+    const k=Object.keys(node)[dpSelRow];
+    if(k!==undefined) delete node[k];
+  }else if(Array.isArray(node)&&dpSelRow<node.length) node.splice(dpSelRow,1);
+  renderDpView();
+};
+$('#dpAddCol').onclick=()=>{
+  const node=nodeAt(dpPath), shape=shapeOf(node);
+  if(shape==='objects'){
+    const k=(prompt(t('dpNewColName'),'')||'').trim(); if(!k) return;
+    if(node.some(it=>k in it)){ flash(t('tColExists'),'err'); return; }
+    node.forEach(it=>{ it[k]=''; });
+  }else if(shape==='arrays') node.forEach(r=>r.push(''));
+  else return;
+  renderDpView();
+};
+$('#dpRawBtn').onclick=()=>{
+  if(dpRawScope){
+    try{
+      const parsed=JSON.parse($('#dpRawText').value);
+      if(dpRawScope==='root') dpData=parsed; else setNodeAt(dpPath,parsed);
+    }catch(e){ flash(tn('tDataBad',e.message),'err'); return; }
+    dpRaw=(dpRawScope==='node'); /* node raw → root raw, root raw → table */
+  }else dpRaw=true;
+  renderDpView();
+};
+function dpWrite(thenBake){
+  const blocks=dataBlocks(); const b=blocks[dpBlockIdx]; if(!b) return;
+  if(dpRawScope){
+    let parsed;
+    try{ parsed=JSON.parse($('#dpRawText').value); }
+    catch(e){ flash(tn('tDataBad',e.message),'err'); return; }
+    if(dpRawScope==='root') dpData=parsed; else setNodeAt(dpPath,parsed);
+  }
+  let prevData=null;
+  try{ prevData=JSON.parse(b.textContent); }catch(_){}
+  b.textContent='\n'+JSON.stringify(dpData,null,2)+'\n';
+  snapshot();
+  if(!thenBake){ flash(t('tDataApplied'),'ok'); return; }
+  if(hasExecutableScripts(doc)){ bake(); return; }
+  if(lastDynamicHTML){ rebakeFromSource(); return; }
+  staticPatchApply(prevData);
+}
+/* no renderer & no source: patch unambiguous value changes straight into the rendered DOM */
+function leafDiffs(a,b,out){
+  if(JSON.stringify(a)===JSON.stringify(b)) return out;
+  const ca=isContainer(a), cb=isContainer(b);
+  if(ca&&cb&&Array.isArray(a)===Array.isArray(b)){
+    new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>leafDiffs(a[k],b[k],out));
+  }else out.push({oldV:a,newV:b});
+  return out;
+}
+/* token-level matching inside style attributes: catches values inside composites
+   like "3px solid #0e7490" and counts every occurrence for the ambiguity guard */
+const isTokB=ch=>ch===undefined||' \t:;,()"\''.includes(ch);
+function tokenHitsInStyle(st,s){
+  let c=0,i=0;
+  while((i=st.indexOf(s,i))!==-1){
+    if(isTokB(st[i-1])&&isTokB(st[i+s.length])) c++;
+    i+=s.length||1;
+  }
+  return c;
+}
+function tokenReplaceInStyle(st,s,n){
+  let i=0;
+  while((i=st.indexOf(s,i))!==-1){
+    if(isTokB(st[i-1])&&isTokB(st[i+s.length]))
+      return st.slice(0,i)+n+st.slice(i+s.length);
+    i+=s.length||1;
+  }
+  return st;
+}
+function staticPatchApply(prev){
+  if(!prev){ flash(t('tPatchNone'),'err'); return; }
+  const diffs=leafDiffs(prev,dpData,[]);
+  const prim=v=>v===null||['string','number','boolean'].includes(typeof v);
+  let okN=0, skipN=0;
+  for(const d of diffs){
+    if(!prim(d.oldV)||!prim(d.newV)||d.oldV===''||d.oldV===null){ skipN++; continue; }
+    const s=String(d.oldV), n=String(d.newV);
+    const hits=[];
+    const walker=doc.createTreeWalker(doc.body,NodeFilter.SHOW_TEXT);
+    let tn0;
+    while((tn0=walker.nextNode())){
+      const pe=tn0.parentElement;
+      if(!pe||pe.closest('script,style')) continue;
+      if(tn0.nodeValue.trim()===s) hits.push({type:'text',node:tn0});
+    }
+    doc.body.querySelectorAll('*').forEach(el=>{
+      if(el.tagName==='SCRIPT'||el.tagName==='STYLE') return;
+      [...el.attributes].forEach(a=>{
+        if(a.name.startsWith('data-le')||a.name==='contenteditable') return;
+        if(a.name==='style'){
+          const c=tokenHitsInStyle(a.value,s);
+          for(let i=0;i<c;i++) hits.push({type:'style',el});
+        }else if(a.value===s) hits.push({type:'attr',el,attr:a.name});
+      });
+    });
+    if(hits.length===1){
+      const h=hits[0];
+      if(h.type==='text') h.node.nodeValue=h.node.nodeValue.replace(s,n);
+      else if(h.type==='attr') h.el.setAttribute(h.attr,n);
+      else h.el.setAttribute('style',tokenReplaceInStyle(h.el.getAttribute('style'),s,n));
+      okN++;
+    }else skipN++;
+  }
+  if(okN) snapshot();
+  if(okN||skipN)
+    flash(t('tPatchResult').replace('{a}',okN).replace('{b}',skipN), okN?'ok':'err');
+  else flash(t('tPatchNone'),'err');
+}
+/* re-render after baking: splice current data into the remembered dynamic source */
+async function rebakeFromSource(){
+  if(baking) return;
+  if(!lastDynamicHTML){ flash(t('tNoRenderer'),'err'); return; }
+  const nd=new DOMParser().parseFromString(lastDynamicHTML,'text/html');
+  const blocks=[...nd.querySelectorAll('script[type]')]
+    .filter(s=>(s.getAttribute('type')||'').trim().toLowerCase()==='application/json');
+  const b=blocks[dpBlockIdx];
+  if(!b){ flash(t('tNoRenderer'),'err'); return; }
+  b.textContent='\n'+JSON.stringify(dpData,null,2)+'\n';
+  lastDynamicHTML='<!DOCTYPE html>\n'+nd.documentElement.outerHTML;
+  baking=true; $('#bakeBtn').disabled=true; flash(t('tBaking'));
+  try{
+    const baked=await runAndCapture(lastDynamicHTML);
+    swapDoc(withSourceBlock(baked,lastDynamicHTML),'apply');
+    flash(t('tBaked'),'ok');
+  }catch(err){ flash(t('tBakeFail')+': '+err.message,'err'); }
+  baking=false; $('#bakeBtn').disabled=false;
+}
+$('#dpApply').onclick=()=>dpWrite(false);
+$('#dpApplyBake').onclick=()=>dpWrite(true);
+$('#dataBtn').onclick=()=>dpOpen?closeDataPanel():openDataPanel();
+$('#dpClose').onclick=closeDataPanel;
+$('#dpBlockSel').addEventListener('change',e=>{
+  dpBlockIdx=+e.target.value; dpPath=[]; dpRaw=false; renderDataPanel(true);
+});
+
+/* ═══════════ insert dropdown ═══════════ */
+$('#insertBtn').onclick=e=>{ e.stopPropagation(); $('#insertDd').classList.toggle('open'); };
+$$('#insertDd .ddMenu [data-ins]').forEach(b=>b.addEventListener('click',()=>{
+  $('#insertDd').classList.remove('open'); insertKind(b.dataset.ins);
+}));
+document.addEventListener('click',()=>$('#insertDd').classList.remove('open'));
+
+/* ═══════════ toast ═══════════ */
+function flash(msg,cls){
+  toastEl.textContent=msg; toastEl.className=cls||'';
+  toastEl.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toastEl.style.opacity='0',2600);
+}
+
+/* ═══════════ init ═══════════ */
+$('#langSel').value=LANG;
+applyI18n();
+updateTitle();
+setSrcdoc(TEMPLATE(),'fresh');
+if(!fsOK) flash(t('tNoFS'),'err');
+</script>
+</body>
+</html>
