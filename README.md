@@ -7,7 +7,7 @@
 ブラウザでダブルクリックして開くだけ。要素をクリックして編集し、`Ctrl+S` で元ファイルに直接保存できます。
 ビルドもサーバーも依存パッケージも一切なし。
 
-[🚀 ライブデモ](https://あなたのユーザー名.github.io/html-studio/) ・ [⌨️ ショートカット](#️-キーボードショートカット) ・ [❓ FAQ](#-faq)
+[🚀 ライブデモ](https://dntjr2811.github.io/html-studio/) ・ [⌨️ ショートカット](#️-キーボードショートカット) ・ [❓ FAQ](#-faq)
 
 🇰🇷 한국어 ・ 🇯🇵 日本語 ・ 🇺🇸 English（UI 内で切替可能）
 
@@ -47,12 +47,12 @@
 
 GitHub Pages にホストすればインストール不要で利用できます。
 
-> 👉 **[https://あなたのユーザー名.github.io/html-studio/](https://あなたのユーザー名.github.io/html-studio/)**
+> 👉 **[https://dntjr2811.github.io/html-studio/](https://dntjr2811.github.io/html-studio/)**
 
 ### 3. クローンして使う
 
 ```bash
-git clone https://github.com/あなたのユーザー名/html-studio.git
+git clone https://github.com/dntjr2811/html-studio.git
 cd html-studio
 # index.html をブラウザで開くだけ
 ```
